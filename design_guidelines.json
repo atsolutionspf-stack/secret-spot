@@ -1,0 +1,228 @@
+{
+  "theme": {
+    "mode": "dark",
+    "vibe": "Bold beach-at-night street food with neon coral and warm amber accents, gritty coastal street aesthetic, high-contrast dark palette, tactile card surfaces, mobile-first Instagram-to-table flow",
+    "archetype": "ARCHETYPE 2 & 5 Hybrid: Night Beach Pro / Street Gourmet Luxury"
+  },
+  "typography": {
+    "font_family_heading": "Space Grotesk Variable, sans-serif",
+    "font_family_body": "Plus Jakarta Sans Variable, sans-serif",
+    "font_family_mono": "JetBrains Mono Variable, monospace",
+    "font_import_instruction": "In frontend/src/index.css: @import '@fontsource-variable/space-grotesk'; @import '@fontsource-variable/plus-jakarta-sans'; @import '@fontsource-variable/jetbrains-mono';",
+    "scale_px": {
+      "display": 56,
+      "h1": 42,
+      "h2": 32,
+      "h3": 24,
+      "h4": 20,
+      "body": 16,
+      "caption": 14
+    },
+    "rules": {
+      "headings": "font-black tracking-tight text-stone-100 uppercase",
+      "body": "leading-relaxed text-stone-300 font-normal",
+      "labels": "uppercase tracking-[0.2em] font-semibold text-xs text-amber-400/90 font-mono",
+      "numbers_prices": "font-mono font-bold tracking-tight text-amber-400"
+    }
+  },
+  "colors": {
+    "surfaces": [
+      {
+        "name": "page",
+        "kind": "solid",
+        "bg": "#0B0E14",
+        "on_bg": "#F5F5F4",
+        "on_bg_muted": "#A8A29E"
+      },
+      {
+        "name": "panel",
+        "kind": "solid",
+        "bg": "#141923",
+        "on_bg": "#FAFAF9",
+        "on_bg_muted": "#A8A29E"
+      },
+      {
+        "name": "card_elevated",
+        "kind": "solid",
+        "bg": "#1C2331",
+        "on_bg": "#FFFFFF",
+        "on_bg_muted": "#94A3B8"
+      },
+      {
+        "name": "inverse",
+        "kind": "solid",
+        "bg": "#F5F5F4",
+        "on_bg": "#0B0E14",
+        "on_bg_muted": "#44403C"
+      },
+      {
+        "name": "hero",
+        "kind": "image",
+        "contrast_against": "#080B10",
+        "guarantee": "scrim: linear-gradient(180deg, rgba(11,14,20,0.85) 0%, rgba(11,14,20,0.70) 50%, #0B0E14 100%)",
+        "on_bg": "#FFFFFF",
+        "on_bg_muted": "#CBD5E1",
+        "roles": {
+          "link": "#FF6B4A",
+          "error": "#EF4444",
+          "success": "#10B981"
+        }
+      },
+      {
+        "name": "glass_header",
+        "kind": "glass",
+        "contrast_against": "#0B0E14",
+        "guarantee": "backdrop-blur-xl bg-[#0B0E14]/85 border-b border-white/10",
+        "on_bg": "#F5F5F4",
+        "on_bg_muted": "#94A3B8"
+      },
+      {
+        "name": "badge_neon",
+        "kind": "solid",
+        "bg": "#2E151B",
+        "on_bg": "#FF6B4A",
+        "on_bg_muted": "#FFA07A"
+      },
+      {
+        "name": "badge_open",
+        "kind": "solid",
+        "bg": "#062E20",
+        "on_bg": "#34D399",
+        "on_bg_muted": "#6EE7B7"
+      },
+      {
+        "name": "badge_closed",
+        "kind": "solid",
+        "bg": "#2A1818",
+        "on_bg": "#F87171",
+        "on_bg_muted": "#FCA5A5"
+      }
+    ],
+    "accent": "#FF5722",
+    "on_accent": "#FFFFFF",
+    "accent_warm": "#F59E0B",
+    "accent_cyan": "#06B6D4",
+    "accent_pink": "#EC4899",
+    "border_subtle": "rgba(255, 255, 255, 0.08)",
+    "border_focus": "rgba(255, 87, 34, 0.5)"
+  },
+  "entry_surfaces": {
+    "/": "split hero with dynamic neon night-beach ambiance, CTA cluster left (Hacer Reserva + Ver Menú), live open/closed beach status pill, interactive floating signature burger showcase right",
+    "/admin": "locked glass PIN terminal with tactile keypad, keypad feedback, quick-switch tabs for Bookings, Messages, and Menu CRUD"
+  },
+  "grids_and_layouts": {
+    "container": "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8",
+    "mobile_first": "Optimized for Instagram visitors (375px-430px viewport default), sticky floating mobile action bar with Quick Call + Book Table",
+    "hero_grid": "grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center min-h-[85vh] pt-24 pb-12",
+    "services_bento": "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6",
+    "menu_grid": "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6",
+    "admin_dashboard_grid": "grid grid-cols-1 lg:grid-cols-4 gap-6 pt-6"
+  },
+  "media": {
+    "image_urls": {
+      "hero_background": {
+        "url": "https://images.pexels.com/photos/36741809/pexels-photo-36741809.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+        "category": "hero",
+        "description": "Close-up gourmet burger held with vivid neon atmosphere and dark street ambiance"
+      },
+      "story_chef": {
+        "url": "https://images.pexels.com/photos/24245659/pexels-photo-24245659.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+        "category": "story",
+        "description": "Artisan chef preparing and slicing gourmet burger with high precision"
+      },
+      "burger_montecarlo": {
+        "url": "https://images.pexels.com/photos/36741809/pexels-photo-36741809.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+        "category": "menu_burgers",
+        "description": "Montecarlo 180g beef burger with Kentucky crunchy chicken & special toppings"
+      },
+      "wings_crispy": {
+        "url": "https://images.unsplash.com/photo-1637273484026-11d51fb64024?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzl8MHwxfHNlYXJjaHwyfHxjcmlzcHklMjBjaGlja2VuJTIwd2luZ3MlMjBzdHJlZXQlMjBmb29kfGVufDB8fHx8MTc5MjQwNzI2N3ww&ixlib=rb-4.1.0&q=85",
+        "category": "menu_alitas",
+        "description": "Glazed and crispy seasoned chicken wings served street-style"
+      },
+      "poke_salmon": {
+        "url": "https://images.unsplash.com/photo-1597958792579-bd3517df6399?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxOTJ8MHwxfHNlYXJjaHwxfHxwb2tlJTIwYm93bCUyMHNhbG1vbiUyMGF2b2NhZG8lMjBmcmVzaCUyMGZvb2R8ZW58MHx8fHwxNzkyNDA3MjY3fDA&ixlib=rb-4.1.0&q=85",
+        "category": "menu_poke",
+        "description": "Fresh Salmon & Avocado Poké bowl on dark slate with vibrant greens"
+      },
+      "poke_fresh": {
+        "url": "https://images.unsplash.com/photo-1556040220-4096d522378d?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxOTJ8MHwxfHNlYXJjaHw0fHxwb2tlJTIwYm93bCUyMHNhbG1vbiUyMGF2b2NhZG8lMjBmcmVzaCUyMGZvb2R8ZW58MHx8fHwxNzkyNDA3MjY3fDA&ixlib=rb-4.1.0&q=85",
+        "category": "menu_poke",
+        "description": "Artisan poké bowl with fresh ingredients and chopsticks"
+      },
+      "wings_basket": {
+        "url": "https://images.pexels.com/photos/27668695/pexels-photo-27668695.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+        "category": "menu_alitas",
+        "description": "Hot buffalo wings in basket with artisan dip"
+      }
+    }
+  },
+  "motion_and_interactions": {
+    "library": "motion/react",
+    "scrolling": "Smooth scroll behavior with section spy in header",
+    "animations": {
+      "fade_up": {
+        "initial": { "opacity": 0, "y": 24 },
+        "animate": { "opacity": 1, "y": 0 },
+        "transition": { "duration": 0.45, "ease": [0.22, 1, 0.36, 1] }
+      },
+      "stagger_cards": {
+        "staggerChildren": 0.08
+      },
+      "hover_card": "hover:-translate-y-1 hover:border-amber-500/40 hover:shadow-[0_10px_30px_-10px_rgba(255,87,34,0.2)] transition-all duration-300",
+      "neon_pulse": "animate-pulse"
+    }
+  },
+  "accessibility": {
+    "wcag_compliance": "WCAG AA with APCA contrast validation",
+    "text_contrast": "All body texts minimum 4.5:1 ratio against card (#1C2331) and page (#0B0E14)",
+    "focus_states": "focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B0E14] outline-none",
+    "data_testids": "MANDATORY on all buttons, links, inputs, tabs, modal triggers, status badges, and admin controls"
+  },
+  "components_structure": {
+    "app_shell": "frontend/src/App.tsx",
+    "pages": [
+      { "path": "/", "file": "frontend/src/pages/Home.tsx", "description": "Single-page experience containing Hero, Story, Services, Menu, Booking, Contact, Opening Hours, Map" },
+      { "path": "/admin", "file": "frontend/src/pages/Admin.tsx", "description": "Admin console with PIN gate (default 1234), Bookings management, Contact messages inbox, and Menu editor" }
+    ],
+    "sections": [
+      { "name": "Header", "file": "frontend/src/components/Header.tsx", "features": "Brand logo, nav links (Story, Services, Menu, Book, Contact), ES/EN toggle, Live Open badge, 'Reservar' CTA" },
+      { "name": "HeroSection", "file": "frontend/src/components/HeroSection.tsx", "features": "Puçol Beach street vibe, primary booking CTA, view menu CTA, live opening status, floating signature burger feature" },
+      { "name": "StorySection", "file": "frontend/src/components/StorySection.tsx", "features": "Short narrative of Secret Spot (beachfront food revolution in Puçol), highlights of fresh ingredients and rooftop atmosphere" },
+      { "name": "ServicesSection", "file": "frontend/src/components/ServicesSection.tsx", "features": "Bento grid of 12 amenities: Terraza / Heated terrace, Vistas al mar / Sea view, Rooftop bar, Música en vivo, Mascotas / Pets welcome, Zona infantil / Kids corner, Parking, Accesible / Wheelchair friendly, Para llevar / Takeaway, Catering, Bodas / Weddings, Eventos privados / Private events" },
+      { "name": "PaymentOptionsSection", "file": "frontend/src/components/PaymentOptionsSection.tsx", "features": "Payment badges: VISA, Mastercard, Contactless / NFC, Cash, PayPal, Bizum, Bank transfer" },
+      { "name": "MenuSection", "file": "frontend/src/components/MenuSection.tsx", "features": "Tabs (Burgers, Alitas, Poké Bowls, Sides / Entrantes, Sweets / Postres), tags (Vegano, Picante, Estrella), item modal, search/filter" },
+      { "name": "BookingSection", "file": "frontend/src/components/BookingSection.tsx", "features": "Interactive table reservation: name, phone, email, date (restricted to Thu-Sun opening days), time (19:00 - 00:00/01:00 slots), party size (1-12+), notes; instant visual confirmation modal with booking code" },
+      { "name": "ContactSection", "file": "frontend/src/components/ContactSection.tsx", "features": "Message form with 500-char counter, Click-to-call (+34 613 528 535), Direct Email (Josepmartinadani80@gmail.com), Address (Avinguda dels Pescadors 201, 46530 Puçol, Valencia) with Google Maps link, Live Open Now / Closed status badge based on Spain local time" },
+      { "name": "Footer", "file": "frontend/src/components/Footer.tsx", "features": "Social links (Instagram, Facebook), Hours summary, Contact details, Legal Notice / Aviso Legal dialog with full Spanish legal text & cookies note, Admin portal link" },
+      { "name": "AdminPortal", "file": "frontend/src/components/admin/AdminPortal.tsx", "features": "PIN Pad login (1234), Bookings table (status filters: pending, confirmed, cancelled, completed), Messages Inbox with unread count & delete, Menu item toggle visible/hidden & edit price" }
+    ]
+  },
+  "business_and_locale_rules": {
+    "locale": "es-ES default with en-GB toggle",
+    "currency": "EUR (€)",
+    "phone": "+34 613 52 85 35",
+    "email": "Josepmartinadani80@gmail.com",
+    "address": "Avinguda dels Pescadors 201, 46530 Puçol, València, Spain",
+    "google_maps_url": "https://maps.google.com/?q=Secret+Spot+Pucol+Avinguda+dels+Pescadors+201",
+    "opening_hours": {
+      "thursday": { "open": "19:00", "close": "00:00", "days": [4] },
+      "friday_to_sunday": { "open": "19:00", "close": "01:00", "days": [5, 6, 0] },
+      "closed_days": [1, 2, 3],
+      "closed_label": "Lunes a Miércoles cerrado (Mon-Wed Closed)"
+    },
+    "default_admin_pin": "1234"
+  },
+  "instructions_to_main_agent": [
+    "1. Set up Tailwind v4 theme tokens in frontend/src/index.css with dark theme variables and fonts (@fontsource-variable/space-grotesk and @fontsource-variable/plus-jakarta-sans).",
+    "2. Implement full Spanish (es) and English (en) dictionary in frontend/src/lib/i18n.ts with seamless language toggle persisted in localStorage.",
+    "3. Implement live restaurant status engine in frontend/src/lib/openingHours.ts checking Europe/Madrid timezone time against Thu 19:00-00:00, Fri-Sun 19:00-01:00, Mon-Wed Closed.",
+    "4. Implement Booking validation ensuring users can only pick open days (Thu-Sun) and allowed timeslots (19:00 to 23:30).",
+    "5. Ensure all forms validate inputs and provide immediate visual feedback with toast notifications using Sonner.",
+    "6. Build backend API endpoints with FastAPI (FastAPI router with prefix /api) + MongoDB for bookings, contact messages, and menu items with seed data preloaded.",
+    "7. Include default menu items: Montecarlo Burger (180g beef, Takis, chicken thigh), Smokey BBQ Wings, Spicy Mango Habanero Wings, Fresh Salmon Poké, Crispy Chicken Poké, Loaded Bacon Cheese Nachos, Truffle Fries, Lotus Biscoff Cheesecake, Artisan Brownie.",
+    "8. Implement Admin panel at /admin with secure PIN verification (default 1234), quick stats, bookings manager (confirm/cancel/filter), inbox reader, and menu toggle.",
+    "9. Add floating mobile action bar on mobile viewports (<768px) with Call, Book Table, and View Menu buttons for high Instagram conversion.",
+    "10. Ensure data-testid is attached to every button, link, input, tab, and card element."
+  ]
+}
