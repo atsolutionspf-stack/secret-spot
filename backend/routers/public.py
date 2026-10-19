@@ -1,9 +1,10 @@
 import secrets
 from typing import List
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, BackgroundTasks, HTTPException
 
 from lib.db import db
+from lib.email import notify_new_booking, notify_new_message
 from lib.hours import is_open, now_madrid, validate_booking_slot
 from models.restaurant import Booking, BookingCreate, HoursStatus, MenuItem, Message, MessageCreate
 
@@ -28,17 +29,19 @@ async def public_menu():
 
 
 @router.post("/bookings", response_model=Booking, status_code=201)
-async def create_booking(body: BookingCreate):
+async def create_booking(body: BookingCreate, background: BackgroundTasks):
     err = validate_booking_slot(body.date, body.time)
     if err:
         raise HTTPException(status_code=400, detail=err)
     booking = Booking(**body.model_dump(), code="SS-" + secrets.token_hex(3).upper())
     await db.bookings.insert_one(booking.model_dump())
+    background.add_task(notify_new_booking, booking.model_dump())
     return booking
 
 
 @router.post("/messages", response_model=Message, status_code=201)
-async def create_message(body: MessageCreate):
+async def create_message(body: MessageCreate, background: BackgroundTasks):
     msg = Message(**body.model_dump())
     await db.messages.insert_one(msg.model_dump())
+    background.add_task(notify_new_message, msg.model_dump())
     return msg

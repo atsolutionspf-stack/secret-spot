@@ -66,7 +66,7 @@ export default function BookingSection() {
       toast.error(t.booking.required);
       return;
     }
-    mutation.mutate({ ...form, name: form.name.trim(), phone: form.phone.trim(), email: form.email.trim(), party_size: Number(form.party_size) });
+    mutation.mutate({ ...form, name: form.name.trim(), phone: form.phone.trim(), email: form.email.trim(), party_size: Number(form.party_size), lang });
   };
 
   const timeLabel = (s: string) => (slotMinutes(s) >= 24 * 60 ? `${s} ${t.booking.afterMidnight}` : s);

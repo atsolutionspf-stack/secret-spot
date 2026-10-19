@@ -29,6 +29,7 @@ export interface BookingCreate {
   time: string; // HH:MM
   party_size: number;
   note: string;
+  lang: "es" | "en"; // guest's site language, used for their emails
 }
 export interface Booking extends BookingCreate {
   id: string;

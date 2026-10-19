@@ -61,6 +61,7 @@ class BookingCreate(BaseModel):
     time: str = Field(pattern=r"^\d{2}:\d{2}$")
     party_size: int = Field(ge=1, le=30)
     note: str = Field(default="", max_length=500)
+    lang: Literal["es", "en"] = "es"  # guest's site language, used for their emails
 
 
 class Booking(BookingCreate):

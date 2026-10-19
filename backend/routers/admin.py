@@ -3,10 +3,11 @@ import os
 from datetime import timezone
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Request, Response
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, Response
 
 from lib.auth import clear_session, is_admin, issue_session, require_admin
 from lib.db import db
+from lib.email import notify_booking_status
 from lib.hours import now_madrid
 from models.restaurant import (
     AdminMe,
@@ -75,12 +76,17 @@ async def list_bookings(status: Optional[str] = None):
 
 
 @protected.patch("/bookings/{id}", response_model=Booking)
-async def update_booking(id: str, body: BookingStatusUpdate):
+async def update_booking(id: str, body: BookingStatusUpdate, background: BackgroundTasks):
+    before = await db.bookings.find_one({"id": id}, {"_id": 0, "status": 1})
+    if not before:
+        raise HTTPException(status_code=404, detail="not found")
     doc = await db.bookings.find_one_and_update(
         {"id": id}, {"$set": {"status": body.status}}, projection={"_id": 0}, return_document=True
     )
     if not doc:
         raise HTTPException(status_code=404, detail="not found")
+    if before.get("status") != body.status:
+        background.add_task(notify_booking_status, dict(doc))
     return Booking(**_aware(doc))
 
 

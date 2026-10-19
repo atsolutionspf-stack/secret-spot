@@ -24,4 +24,12 @@ messages{name, email, phone, subject, message, read, created_at}
 
 ## Seed
 `cd backend && python seed.py` (26 real menu items from the old site; `--reset` reloads). Bookings/messages start empty.
-Not in scope: online ordering/payment, email/SMS notifications, capacity checks.
+## Email notifications (backend/lib/email.py, Emergent-managed Resend, sent as background tasks; failures only logged)
+- New booking → owner (OWNER_EMAIL) + guest "received" email
+- New contact message → owner
+- Admin changes booking status to confirmed/cancelled → guest email (only when the status actually changes; completed sends nothing)
+- Guest emails use booking.lang (es|en, sent by the frontend from the site language). Reply-To = EMAIL_REPLY_TO.
+- Env: EMERGENT_EMAIL_KEY, EMAIL_FROM_NAME="Secret Spot", EMAIL_REPLY_TO, OWNER_EMAIL, PUBLIC_SITE_URL
+- Testing: use delivered@resend.dev as guest email; owner alerts go to the real inbox.
+
+Not in scope: online ordering/payment, SMS/WhatsApp, capacity checks.
