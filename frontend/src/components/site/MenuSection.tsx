@@ -8,6 +8,7 @@ import { IMAGES, formatPrice } from "@/lib/site";
 import { CATEGORIES, type Category, type MenuItem, type Tag } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Reveal, SectionLabel } from "./common";
+import { AllergenChips, AllergenLegend } from "./Allergens";
 
 const TAG_STYLE: Record<Tag, { cls: string; Icon: typeof Leaf }> = {
   vegan: { cls: "border-emerald-500/30 bg-emerald-500/10 text-emerald-400", Icon: Leaf },
@@ -110,15 +111,15 @@ export default function MenuSection() {
                   <p data-testid="menu-item-description" className="mt-2 text-sm leading-relaxed text-stone-400">
                     {lang === "es" ? item.description_es : item.description_en || item.description_es}
                   </p>
-                  <div className="mt-auto flex flex-wrap items-center gap-2 pt-4">
-                    {item.tags.map((tag) => (
-                      <TagBadge key={tag} tag={tag} label={t.menu.tags[tag]} />
-                    ))}
-                    {item.allergens && (
-                      <span className="ml-auto font-mono text-[10px] uppercase tracking-wider text-stone-500">
-                        {t.menu.allergens}: {item.allergens}
-                      </span>
+                  <div className="mt-auto flex flex-col gap-3 pt-4">
+                    {item.tags.length > 0 && (
+                      <div className="flex flex-wrap items-center gap-2">
+                        {item.tags.map((tag) => (
+                          <TagBadge key={tag} tag={tag} label={t.menu.tags[tag]} />
+                        ))}
+                      </div>
                     )}
+                    <AllergenChips raw={item.allergens} />
                   </div>
                 </motion.li>
               ))}
@@ -126,6 +127,8 @@ export default function MenuSection() {
           </div>
         </motion.div>
       </AnimatePresence>
+
+      <AllergenLegend />
     </section>
   );
 }

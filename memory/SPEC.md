@@ -2,8 +2,12 @@
 Public single-page site (ES default / EN toggle, persisted in localStorage `ss_lang`) + PIN-protected admin at /admin.
 
 ## Public (/)
-Hero (Hacer una reserva / Nuestro menú), Story, Services (12), Payment options, Menu (tabs burgers/alitas/poke/sides/sweets; only available items),
+Hero (Hacer una reserva / Nuestro menú), Story, Services (9: terraza, vistas al mar, servicio en barra, mascotas, zona infantil, accesible, para llevar, bodas, eventos privados), Payment options, Menu (tabs burgers/alitas/poke/sides/sweets; only available items),
 Booking form, Contact form (≤500 chars), hours with live Open/Closed badge (Europe/Madrid), footer with legal notice dialog, mobile action bar.
+
+## Allergens
+menu_items.allergens is a string of numbers "1, 3, 10" (1–14). Shown as icon chips per dish + legend under the menu (frontend/src/components/site/Allergens.tsx).
+Numbering (owner's list; #10 assumed Lácteos because the list repeated Mostaza): 1 Gluten, 2 Crustáceos, 3 Huevos, 4 Pescado, 5 Cacahuete, 6 Soja, 7 Frutos secos, 8 Apio, 9 Mostaza, 10 Lácteos, 11 Sésamo, 12 Sulfitos, 13 Moluscos, 14 Altramuces.
 
 ## Opening hours (backend/lib/hours.py mirrors frontend/src/lib/hours.ts)
 Thu 19:00–00:00, Fri–Sun 19:00–01:00, Mon–Wed closed. Booking slots every 30 min, last 30 min before close (Thu ≤23:30, Fri–Sun ≤00:30).

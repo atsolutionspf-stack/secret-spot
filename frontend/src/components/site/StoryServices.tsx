@@ -1,18 +1,4 @@
-import {
-  Accessibility,
-  Baby,
-  Building2,
-  CarFront,
-  CreditCard,
-  Gem,
-  Music,
-  PartyPopper,
-  PawPrint,
-  ShoppingBag,
-  Sun,
-  UtensilsCrossed,
-  Waves,
-} from "lucide-react";
+import { Accessibility, Baby, Beer, CreditCard, Gem, PartyPopper, PawPrint, ShoppingBag, Sun, Waves } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { IMAGES } from "@/lib/site";
 import { Reveal, SectionLabel } from "./common";
@@ -63,14 +49,11 @@ export function Story() {
 const SERVICE_ICONS = {
   terrace: Sun,
   seaview: Waves,
-  rooftop: Building2,
-  music: Music,
+  bar: Beer,
   pets: PawPrint,
   kids: Baby,
-  parking: CarFront,
   access: Accessibility,
   takeaway: ShoppingBag,
-  catering: UtensilsCrossed,
   weddings: Gem,
   events: PartyPopper,
 } as const;

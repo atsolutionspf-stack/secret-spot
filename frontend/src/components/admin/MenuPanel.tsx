@@ -91,7 +91,7 @@ function ItemDialog({ item, open, onClose }: { item: MenuItem | null; open: bool
           </div>
           <div className="space-y-1.5">
             <Label>{t.admin.allergens}</Label>
-            <Input data-testid="admin-menu-allergens-input" className={inputCls} value={form.allergens} maxLength={40} onChange={(e) => set("allergens", e.target.value)} />
+            <Input data-testid="admin-menu-allergens-input" className={inputCls} placeholder="1, 3, 10" value={form.allergens} maxLength={40} onChange={(e) => set("allergens", e.target.value)} />
           </div>
           <div className="space-y-1.5">
             <Label>{t.admin.priceNote}</Label>
