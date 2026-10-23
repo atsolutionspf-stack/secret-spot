@@ -60,9 +60,10 @@ async def get_status_checks():
     status_checks = await db.status_checks.find().to_list(1000)
     return [StatusCheck(**status_check) for status_check in status_checks]
 
-from routers import admin as admin_routes, public as public_routes  # noqa: E402
+from routers import admin as admin_routes, orders as order_routes, public as public_routes  # noqa: E402
 
 api_router.include_router(public_routes.router)
+api_router.include_router(order_routes.router)
 api_router.include_router(admin_routes.router)
 api_router.include_router(admin_routes.protected)
 

@@ -5,6 +5,7 @@ import { SITE } from "@/lib/site";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { LangToggle, OpenBadge } from "./common";
+import OrderButton from "@/features/orders/components/OrderButton";
 
 const LINKS = [
   { id: "historia", key: "story" },
@@ -64,6 +65,7 @@ export default function Header() {
 
         <div className="flex items-center gap-2">
           <LangToggle />
+          <OrderButton variant="header" />
           <a
             href="#reservar"
             data-testid="header-book-button"

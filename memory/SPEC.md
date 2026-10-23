@@ -9,6 +9,19 @@ Booking form, Contact form (≤500 chars), hours with live Open/Closed badge (Eu
 menu_items.allergens is a string of numbers "1, 3, 10" (1–14). Shown as icon chips per dish + legend under the menu (frontend/src/components/site/Allergens.tsx).
 Numbering (owner's list; #10 assumed Lácteos because the list repeated Mostaza): 1 Gluten, 2 Crustáceos, 3 Huevos, 4 Pescado, 5 Cacahuete, 6 Soja, 7 Frutos secos, 8 Apio, 9 Mostaza, 10 Lácteos, 11 Sésamo, 12 Sulfitos, 13 Moluscos, 14 Altramuces.
 
+## Pickup orders (DEMO MODE until Supabase is connected) — see /app/supabase/README.md
+- "Pedir ahora" buttons (header, hero, menu section, mobile bar) open a Sheet: Carta → Carrito → Datos → Resumen → Confirmación.
+- Pickup only, pay at pickup. Ordering only while open; pickup slots every 15 min from now+20 min to close-15 min (backend/lib/orders.py).
+- Cart stores ids+qty only (localStorage ss_cart_v1); prices from the live menu, computed in cents (features/orders/cart.ts).
+  Server recomputes totals from Mongo menu prices with Decimal; client prices are ignored.
+- GET /api/orders/config → {mode: demo|supabase, accepting, reason: closed|last_orders|null, pickup_slots, prep_minutes}
+- POST /api/orders {customer_name, customer_phone, notes, pickup_time, items[{menu_item_id, quantity}]} → 201 {order, persisted, mode}
+  400 detail codes: closed, last_orders, invalid_pickup_time, item_unavailable, quantity_too_high; 503 store_unavailable.
+- Store: DemoOrderStore (persisted=false, nothing saved) unless DATABASE_URL (Supabase transaction pooler) is set → SupabaseOrderStore
+  (SQLAlchemy async, tables orders/order_items via Alembic, RLS on) + owner email on each real order.
+- Visibility: buttons shown when mode=supabase, or on preview/localhost hosts; HIDDEN on the published site while in demo mode.
+- Testing while closed: pin the clock in pytest (tests/test_orders_api.py) or mock /api/orders/config in the browser.
+
 ## Opening hours (backend/lib/hours.py mirrors frontend/src/lib/hours.ts)
 Thu 19:00–00:00, Fri–Sun 19:00–01:00, Mon–Wed closed. Booking slots every 30 min, last 30 min before close (Thu ≤23:30, Fri–Sun ≤00:30).
 Server rejects: closed_day, invalid_time, date_in_past, time_in_past, date_too_far (>90 days) → 400 {detail: code}.

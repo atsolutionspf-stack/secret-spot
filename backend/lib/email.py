@@ -313,3 +313,39 @@ async def notify_booking_status(b: dict) -> None:
     if b.get("status") in ("confirmed", "cancelled"):
         s, h = guest_booking(b, b["status"])
         await send_email(to=b["email"], subject=s, html=h)
+
+
+def _eur(v: float) -> str:
+    return f"{v:.2f} €".replace(".", ",")
+
+
+def owner_new_order(o: dict) -> tuple[str, str]:
+    subject = f"Nuevo pedido para recoger {o['order_number']} · {o['pickup_time']} · {_eur(o['total'])}"
+    lines = "".join(
+        f'<tr><td style="padding:4px 0;color:#FFFFFF;font-size:14px">{int(l["quantity"])} × {escape(l["name"])}</td>'
+        f'<td style="padding:4px 0;color:#F59E0B;font-size:14px;text-align:right">{_eur(l["line_total"])}</td></tr>'
+        for l in o["items"]
+    )
+    rows = [
+        ("Pedido", f"<strong>{escape(o['order_number'])}</strong>"),
+        ("Recogida", f"hoy a las <strong>{escape(o['pickup_time'])}</strong>"),
+        ("Cliente", escape(o["customer_name"])),
+        ("Teléfono", f'<a href="tel:{escape(o["customer_phone"])}" style="color:#F59E0B">{escape(o["customer_phone"])}</a>'),
+    ]
+    if o.get("notes"):
+        rows.append(("Observaciones", escape(o["notes"])))
+    inner = (
+        '<p style="margin:0 0 8px;font-size:15px">Ha entrado un nuevo pedido <strong>para recoger en el local</strong> (pago al recoger).</p>'
+        + _rows(rows)
+        + f'<table role="presentation" width="100%" style="background:#0B0E14;border-radius:12px;padding:12px 16px;margin:0 0 20px">{lines}'
+        + f'<tr><td style="padding-top:10px;border-top:1px solid #232B3B;color:#FFFFFF;font-weight:bold">Total</td>'
+        + f'<td style="padding-top:10px;border-top:1px solid #232B3B;color:#F59E0B;font-weight:bold;text-align:right">{_eur(o["total"])}</td></tr></table>'
+    )
+    return subject, _layout("Nuevo pedido para recoger", inner)
+
+
+async def notify_new_order(o: dict) -> None:
+    owner = _cfg("OWNER_EMAIL")
+    if owner:
+        s, h = owner_new_order(o)
+        await send_email(to=owner, subject=s, html=h)

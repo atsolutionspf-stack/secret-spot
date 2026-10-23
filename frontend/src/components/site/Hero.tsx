@@ -3,6 +3,7 @@ import { ArrowRight, Flame, MapPin } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { IMAGES, formatPrice } from "@/lib/site";
 import { OpenBadge } from "./common";
+import OrderButton from "@/features/orders/components/OrderButton";
 
 export default function Hero() {
   const { t, lang } = useI18n();
@@ -49,12 +50,12 @@ export default function Hero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
-            className="mt-9 flex flex-col gap-3 sm:flex-row"
+            className="mt-9 flex flex-col gap-3 sm:flex-row sm:flex-wrap"
           >
             <a
               href="#reservar"
               data-testid="hero-book-button"
-              className="group inline-flex items-center justify-center gap-2 rounded-full bg-neon px-7 py-4 font-heading text-base font-bold uppercase tracking-wide text-white shadow-[0_0_40px_-8px_rgba(255,87,34,.9)] transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[0_0_48px_-4px_rgba(255,87,34,1)] active:translate-y-0"
+              className="whitespace-nowrap group inline-flex items-center justify-center gap-2 rounded-full bg-neon px-7 py-4 font-heading text-base font-bold uppercase tracking-wide text-white shadow-[0_0_40px_-8px_rgba(255,87,34,.9)] transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[0_0_48px_-4px_rgba(255,87,34,1)] active:translate-y-0"
             >
               {t.hero.book}
               <ArrowRight className="size-4 transition-transform duration-200 group-hover:translate-x-1" />
@@ -62,10 +63,11 @@ export default function Hero() {
             <a
               href="#menu"
               data-testid="hero-menu-button"
-              className="inline-flex items-center justify-center gap-2 rounded-full border border-white/20 bg-white/5 px-7 py-4 font-heading text-base font-bold uppercase tracking-wide text-white backdrop-blur transition-[background-color,border-color] duration-200 hover:border-amber-400/60 hover:bg-white/10"
+              className="whitespace-nowrap inline-flex items-center justify-center gap-2 rounded-full border border-white/20 bg-white/5 px-7 py-4 font-heading text-base font-bold uppercase tracking-wide text-white backdrop-blur transition-[background-color,border-color] duration-200 hover:border-amber-400/60 hover:bg-white/10"
             >
               {t.hero.menu}
             </a>
+            <OrderButton variant="hero" />
           </motion.div>
           <p className="mt-6 font-mono text-xs uppercase tracking-widest text-stone-500">{t.hero.tonight}</p>
         </div>

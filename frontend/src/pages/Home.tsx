@@ -5,6 +5,7 @@ import MenuSection from "@/components/site/MenuSection";
 import BookingSection from "@/components/site/BookingSection";
 import ContactSection from "@/components/site/ContactSection";
 import { Footer, MobileBar } from "@/components/site/Footer";
+import OrderSheet from "@/features/orders/components/OrderSheet";
 
 export default function Home() {
   return (
@@ -20,6 +21,7 @@ export default function Home() {
       </main>
       <Footer />
       <MobileBar />
+      <OrderSheet />
     </div>
   );
 }

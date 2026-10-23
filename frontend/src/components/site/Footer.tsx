@@ -5,6 +5,7 @@ import { SITE } from "@/lib/site";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { HoursList } from "./common";
 import { Logo } from "./Header";
+import OrderButton from "@/features/orders/components/OrderButton";
 
 export function Footer() {
   const { t } = useI18n();
@@ -60,18 +61,16 @@ export function Footer() {
 
 export function MobileBar() {
   const { t } = useI18n();
-  const items = [
-    { k: "call", href: SITE.phoneHref, Icon: Phone, label: t.mobile.call },
-    { k: "menu", href: "#menu", Icon: UtensilsCrossed, label: t.mobile.menu },
-  ];
   return (
-    <div data-testid="mobile-action-bar" className="fixed inset-x-3 bottom-3 z-40 flex gap-2 rounded-full border border-white/10 bg-[#141923]/90 p-1.5 shadow-2xl backdrop-blur-xl md:hidden">
-      {items.map(({ k, href, Icon, label }) => (
-        <a key={k} href={href} data-testid={`mobile-bar-${k}`} className="flex flex-1 items-center justify-center gap-1.5 rounded-full py-3 text-sm font-semibold text-stone-200 active:bg-white/10">
-          <Icon className="size-4" /> {label}
-        </a>
-      ))}
-      <a href="#reservar" data-testid="mobile-bar-book" className="flex flex-[1.4] items-center justify-center gap-1.5 rounded-full bg-neon py-3 text-sm font-bold text-white shadow-[0_0_20px_-6px_rgba(255,87,34,.9)]">
+    <div data-testid="mobile-action-bar" className="fixed inset-x-3 bottom-3 z-40 flex gap-1 rounded-full border border-white/10 bg-[#141923]/90 p-1.5 shadow-2xl backdrop-blur-xl md:hidden">
+      <a href={SITE.phoneHref} data-testid="mobile-bar-call" aria-label={t.mobile.call} className="flex w-12 shrink-0 items-center justify-center rounded-full py-3 text-stone-200 active:bg-white/10">
+        <Phone className="size-4" />
+      </a>
+      <a href="#menu" data-testid="mobile-bar-menu" className="flex flex-1 items-center justify-center gap-1.5 rounded-full py-3 text-sm font-semibold text-stone-200 active:bg-white/10">
+        <UtensilsCrossed className="size-4" /> {t.mobile.menu}
+      </a>
+      <OrderButton variant="mobile" />
+      <a href="#reservar" data-testid="mobile-bar-book" className="flex flex-[1.3] items-center justify-center gap-1.5 rounded-full bg-neon py-3 text-sm font-bold text-white shadow-[0_0_20px_-6px_rgba(255,87,34,.9)]">
         <CalendarCheck className="size-4" /> {t.mobile.book}
       </a>
     </div>

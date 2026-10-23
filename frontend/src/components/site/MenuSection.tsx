@@ -9,6 +9,7 @@ import { CATEGORIES, type Category, type MenuItem, type Tag } from "@/lib/types"
 import { cn } from "@/lib/utils";
 import { Reveal, SectionLabel } from "./common";
 import { AllergenChips, AllergenLegend } from "./Allergens";
+import OrderButton from "@/features/orders/components/OrderButton";
 
 const TAG_STYLE: Record<Tag, { cls: string; Icon: typeof Leaf }> = {
   vegan: { cls: "border-emerald-500/30 bg-emerald-500/10 text-emerald-400", Icon: Leaf },
@@ -41,7 +42,10 @@ export default function MenuSection() {
             {t.menu.title}
           </h2>
         </div>
-        <p className="max-w-sm text-stone-400">{t.menu.subtitle}</p>
+        <div className="flex flex-col items-start gap-4 md:items-end">
+          <p className="max-w-sm text-stone-400 md:text-right">{t.menu.subtitle}</p>
+          <OrderButton variant="menu" />
+        </div>
       </Reveal>
 
       <div className="sticky top-16 z-30 -mx-4 mt-10 overflow-x-auto bg-[#0B0E14]/90 px-4 py-3 backdrop-blur-xl sm:mx-0 sm:rounded-full sm:border sm:border-white/10 sm:px-2 sm:py-2">
