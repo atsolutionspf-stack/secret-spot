@@ -1,0 +1,8 @@
+
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "secret-spot-api",
+  "main": "src/main.py",
+  "compatibility_date": "2026-10-26",
+  "compatibility_flags": ["python_workers"]
+}
