@@ -19,7 +19,7 @@ Numbering (owner's list; #10 assumed Lácteos because the list repeated Mostaza)
   400 detail codes: closed, last_orders, invalid_pickup_time, item_unavailable, quantity_too_high; 503 store_unavailable.
 - Store: DemoOrderStore (persisted=false, nothing saved) unless DATABASE_URL (Supabase transaction pooler) is set → SupabaseOrderStore
   (SQLAlchemy async, tables orders/order_items via Alembic, RLS on) + owner email on each real order.
-- Visibility: buttons shown when mode=supabase, or on preview/localhost hosts; HIDDEN on the published site while in demo mode.
+- Visibility: buttons ALWAYS shown (owner request), also on the published site; demo banners + "PRUEBA · NO GUARDADO" confirmation remain.
 - Testing while closed: pin the clock in pytest (tests/test_orders_api.py) or mock /api/orders/config in the browser.
 
 ## Opening hours (backend/lib/hours.py mirrors frontend/src/lib/hours.ts)

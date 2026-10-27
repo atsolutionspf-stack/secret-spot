@@ -27,17 +27,11 @@ export function orderErrorCode(err: unknown): string {
   return "generic";
 }
 
-export function isPreviewHost(hostname: string = window.location.hostname): boolean {
-  return hostname === "localhost" || hostname === "127.0.0.1" || hostname.endsWith(".preview.emergentagent.com");
-}
-
 /**
- * Ordering buttons are shown when orders really reach the restaurant (Supabase connected),
- * or on the preview/test site so the flow can be tried. On the published site in demo mode
- * they stay hidden so real customers never place an order that goes nowhere.
+ * Ordering buttons are always shown (owner's choice), also on the published site.
+ * While mode is "demo" the order sheet and confirmation clearly state that the order
+ * is NOT saved and does not reach the restaurant.
  */
 export function useOrderingVisible(): boolean {
-  const { data, isError } = useOrderConfig();
-  if (data && !isError && data.mode === "supabase") return true;
-  return isPreviewHost();
+  return true;
 }

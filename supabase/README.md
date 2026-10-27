@@ -1,8 +1,8 @@
 # Pedidos para recoger → Supabase
 
 Estado actual: **MODO PRUEBA**. Los pedidos se calculan y validan en el servidor, pero **no se guardan en ningún sitio**
-y **no llegan al restaurante**. En la web publicada el botón «Pedir ahora» está oculto hasta conectar Supabase;
-en la vista previa se muestra para poder probarlo, con avisos de «Modo prueba».
+y **no llegan al restaurante**. El botón «Pedir ahora» se muestra siempre (también en la web publicada);
+con avisos claros de «Modo prueba» mientras no haya conexión.
 
 ## Qué hay que hacer para recibir pedidos reales
 
@@ -15,7 +15,7 @@ en la vista previa se muestra para poder probarlo, con avisos de «Modo prueba»
 4. **Crear las tablas**: `cd backend && alembic upgrade head`
    (alternativa manual: pegar `supabase/schema.sql` en el *SQL Editor* de Supabase).
 5. **Reiniciar el backend**. A partir de ahí `GET /api/orders/config` devuelve `"mode": "supabase"`:
-   - el botón «Pedir ahora» aparece también en la web publicada,
+   - desaparecen los avisos de «Modo prueba»,
    - la confirmación dice «¡Pedido recibido!» en lugar de «pedido de prueba»,
    - el dueño recibe un email con cada pedido (OWNER_EMAIL).
 6. **Volver a publicar** la web para que la versión pública use la conexión.
