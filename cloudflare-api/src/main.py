@@ -66,13 +66,11 @@ async def get_menu():
 
         return json.loads(body)
 
-    except HTTPException:
-        raise
-    except Exception as exc:
-        raise HTTPException(
-            status_code=502,
-            detail=f"No se pudo consultar la carta: {type(exc).__name__}",
-        )
+except Exception as exc:
+    raise HTTPException(
+        status_code=502,
+        detail=f"No se pudo consultar la carta: {type(exc).__name__}: {str(exc)}",
+    )
 
 
 Default = asgi.entrypoint(app)
