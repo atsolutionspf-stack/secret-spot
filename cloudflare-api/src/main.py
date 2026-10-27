@@ -9,6 +9,8 @@ from workers import asgi, env, fetch
 
 app = FastAPI(title="Secret Spot API")
 
+# Endpoint de carta conectado a Supabase
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["https://secret-spot.pages.dev"],
