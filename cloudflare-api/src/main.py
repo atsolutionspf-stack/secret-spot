@@ -1,15 +1,12 @@
 
-import os
 import json
 from urllib.parse import urlencode
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from workers import asgi, env, fetch
+from workers import asgi, fetch
 
 app = FastAPI(title="Secret Spot API")
-
-# Endpoint de carta conectado a Supabase
 
 app.add_middleware(
     CORSMiddleware,
@@ -30,8 +27,9 @@ async def health():
 
 
 @app.get("/api/menu")
-async def get_menu():
+async def get_menu(request: Request):
     try:
+        env = request.scope["env"]
         supabase_url = env.SUPABASE_URL.rstrip("/")
         secret_key = env.SUPABASE_SECRET_KEY
         restaurant_id = env.RESTAURANT_ID
@@ -66,11 +64,13 @@ async def get_menu():
 
         return json.loads(body)
 
-except Exception as exc:
-    raise HTTPException(
-        status_code=502,
-        detail=f"No se pudo consultar la carta: {type(exc).__name__}: {str(exc)}",
-    )
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(
+            status_code=502,
+            detail=f"No se pudo consultar la carta: {type(exc).__name__}: {str(exc)}",
+        )
 
 
 Default = asgi.entrypoint(app)
