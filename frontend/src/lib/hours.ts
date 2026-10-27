@@ -1,7 +1,6 @@
-// Mirrors backend/lib/hours.py. Server is the source of truth (GET /api/hours);
-// this client copy is the fallback for the static preview (no backend).
-import { useQuery } from "@tanstack/react-query";
-import { apiGet } from "./api";
+// Opening hours in Europe/Madrid. Mirrors the SQL rules in Supabase (_booking_error / _pickup_slots),
+// which are the source of truth for bookings and orders.
+import { useEffect, useState } from "react";
 import type { HoursStatus } from "./types";
 
 const OPEN_FROM = 19 * 60;
@@ -57,10 +56,10 @@ function madridNowParts(): HoursStatus {
 }
 
 export function useHours(): HoursStatus {
-  const q = useQuery({
-    queryKey: ["hours"],
-    queryFn: () => apiGet<HoursStatus>("/hours"),
-    refetchInterval: 60_000,
-  });
-  return q.data && !q.isError ? q.data : madridNowParts();
+  const [now, setNow] = useState(madridNowParts);
+  useEffect(() => {
+    const id = setInterval(() => setNow(madridNowParts()), 30_000);
+    return () => clearInterval(id);
+  }, []);
+  return now;
 }

@@ -5,7 +5,7 @@ import { format } from "date-fns";
 import { enGB, es as esLocale } from "date-fns/locale";
 import { CalendarDays, CheckCircle2, Clock, Users } from "lucide-react";
 import { toast } from "sonner";
-import { ApiError, apiPost } from "@/lib/api";
+import { createBooking, errorCode } from "@/lib/data";
 import { useI18n } from "@/lib/i18n";
 import { slotMinutes, slotsFor, useHours, weekdayOf } from "@/lib/hours";
 import { formatDate } from "@/lib/site";
@@ -49,14 +49,14 @@ export default function BookingSection() {
   const set = (k: keyof typeof EMPTY, v: string) => setForm((f) => ({ ...f, [k]: v }));
 
   const mutation = useMutation({
-    mutationFn: (body: BookingCreate) => apiPost<Booking>("/bookings", body),
+    mutationFn: (body: BookingCreate) => createBooking(body),
     onSuccess: (b) => {
       setDone(b);
       setForm(EMPTY);
     },
     onError: (err) => {
-      const detail = err instanceof ApiError && err.body && typeof err.body === "object" && "detail" in err.body ? (err.body as { detail: unknown }).detail : null;
-      toast.error(typeof detail === "string" && t.booking.errors[detail] ? t.booking.errors[detail] : t.booking.errors.generic);
+      const code = errorCode(err);
+      toast.error(t.booking.errors[code] ?? t.booking.errors.generic);
     },
   });
 

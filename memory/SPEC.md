@@ -1,3 +1,12 @@
+# ARCHITECTURE (current): static React site → Supabase directly (see /app/supabase/README.md)
+- Frontend talks ONLY to Supabase via frontend/src/lib/data.ts (supabase-js, VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY).
+- Tables: menu_items, bookings, messages, orders, order_items, admins (RLS; only users in public.admins read/write private data).
+- Public writes via RPC: create_booking, create_message, create_order (prices from menu_items, hours/pickup slots in SQL), order_config.
+- Owner login: Supabase Auth email+password (phone OTP once an SMS provider is enabled). PIN login removed.
+- Emails: Supabase Edge Function `notify` (Resend, user's own key) — invoked by the site after each write; dedup flags in DB.
+- Hosting: Cloudflare Pages (frontend/, yarn build, dist, public/_redirects). The FastAPI/Mongo backend below is LEGACY and unused by the site.
+- Schema source of truth: backend/alembic/versions/0002_full_supabase.sql; paste-ready supabase/setup.sql (schema + 26-item menu).
+
 # Secret Spot — restaurant website (Puçol beach)
 Public single-page site (ES default / EN toggle, persisted in localStorage `ss_lang`) + PIN-protected admin at /admin.
 

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Mail, MailOpen, Phone, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { apiDelete, apiGet, apiPatch } from "@/lib/api";
+import { deleteMessage, listMessages, setMessageRead } from "@/lib/data";
 import { useI18n } from "@/lib/i18n";
 import { queryClient } from "@/lib/queryClient";
 import type { Message, MessageUpdate } from "@/lib/types";
@@ -16,14 +16,14 @@ const invalidate = () => {
 export default function MessagesPanel() {
   const { t, lang } = useI18n();
   const [openId, setOpenId] = useState<string | null>(null);
-  const q = useQuery({ queryKey: ["admin", "messages"], queryFn: () => apiGet<Message[]>("/admin/messages") });
+  const q = useQuery({ queryKey: ["admin", "messages"], queryFn: listMessages });
   const mark = useMutation({
-    mutationFn: ({ id, body }: { id: string; body: MessageUpdate }) => apiPatch<Message>(`/admin/messages/${id}`, body),
+    mutationFn: ({ id, body }: { id: string; body: MessageUpdate }) => setMessageRead(id, body.read),
     onSuccess: invalidate,
     onError: () => toast.error(t.admin.error),
   });
   const del = useMutation({
-    mutationFn: (id: string) => apiDelete<void>(`/admin/messages/${id}`),
+    mutationFn: (id: string) => deleteMessage(id),
     onSuccess: () => {
       toast.success(t.admin.deleted);
       invalidate();

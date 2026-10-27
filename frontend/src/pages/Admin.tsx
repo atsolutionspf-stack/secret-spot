@@ -1,15 +1,16 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "motion/react";
 import { CalendarClock, ExternalLink, Inbox, LogOut, UtensilsCrossed } from "lucide-react";
-import { apiGet } from "@/lib/api";
+import { fetchStats, isAdmin, signOut } from "@/lib/data";
+import { useHours } from "@/lib/hours";
+import { queryClient } from "@/lib/queryClient";
+import { supabase } from "@/lib/supabase";
 import { useI18n } from "@/lib/i18n";
-import { endSession } from "@/lib/session";
-import type { AdminMe, AdminStats } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { LangToggle } from "@/components/site/common";
-import PinGate from "@/components/admin/PinGate";
+import AuthGate from "@/components/admin/AuthGate";
 import BookingsPanel from "@/components/admin/BookingsPanel";
 import MessagesPanel from "@/components/admin/MessagesPanel";
 import MenuPanel from "@/components/admin/MenuPanel";
@@ -24,7 +25,8 @@ const TABS: { k: TabKey; Icon: typeof Inbox }[] = [
 function Dashboard() {
   const { t } = useI18n();
   const [tab, setTab] = useState<TabKey>("bookings");
-  const stats = useQuery({ queryKey: ["admin", "stats"], queryFn: () => apiGet<AdminStats>("/admin/stats") });
+  const { today } = useHours();
+  const stats = useQuery({ queryKey: ["admin", "stats"], queryFn: () => fetchStats(today) });
   const s = stats.data && !stats.isError ? stats.data : null;
   const cards = [
     { k: "pending", label: t.admin.stats.pending, v: s?.pending_bookings, accent: "text-amber-400" },
@@ -75,8 +77,17 @@ function Dashboard() {
 
 export default function Admin() {
   const { t } = useI18n();
-  const me = useQuery({ queryKey: ["admin", "me"], queryFn: () => apiGet<AdminMe>("/admin/me"), retry: false });
-  const authed = !!me.data?.authenticated && !me.isError;
+  const me = useQuery({ queryKey: ["admin", "me"], queryFn: isAdmin, retry: false });
+  const authed = me.data === true && !me.isError;
+  useEffect(() => {
+    const { data } = supabase.auth.onAuthStateChange(() => queryClient.invalidateQueries({ queryKey: ["admin", "me"] }));
+    return () => data.subscription.unsubscribe();
+  }, []);
+  const logout = async () => {
+    await signOut();
+    queryClient.clear();
+    window.location.assign("/admin");
+  };
 
   return (
     <div className="min-h-screen bg-[#0B0E14] text-stone-100" data-testid="admin-page">
@@ -96,7 +107,7 @@ export default function Admin() {
               <button
                 type="button"
                 data-testid="admin-logout-button"
-                onClick={() => endSession("/admin")}
+                onClick={logout}
                 className="inline-flex items-center gap-1.5 rounded-full border border-white/10 px-3 py-1.5 text-xs font-semibold text-stone-300 hover:border-red-400/50 hover:text-red-300"
               >
                 <LogOut className="size-3.5" /> {t.admin.logout}
@@ -105,7 +116,7 @@ export default function Admin() {
           </div>
         </div>
       </header>
-      {me.isLoading ? null : authed ? <Dashboard /> : <PinGate />}
+      {me.isLoading ? null : authed ? <Dashboard /> : <AuthGate />}
     </div>
   );
 }

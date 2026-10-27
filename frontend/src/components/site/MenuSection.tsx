@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "motion/react";
 import { Flame, Leaf, Sparkles, Star } from "lucide-react";
-import { apiGet } from "@/lib/api";
+import { fetchMenu } from "@/lib/data";
 import { useI18n } from "@/lib/i18n";
 import { IMAGES, formatPrice } from "@/lib/site";
 import { CATEGORIES, type Category, type MenuItem, type Tag } from "@/lib/types";
@@ -30,7 +30,7 @@ export function TagBadge({ tag, label }: { tag: Tag; label: string }) {
 export default function MenuSection() {
   const { t, lang } = useI18n();
   const [cat, setCat] = useState<Category>("burgers");
-  const { data, isLoading, isError } = useQuery({ queryKey: ["menu"], queryFn: () => apiGet<MenuItem[]>("/menu") });
+  const { data, isLoading, isError } = useQuery({ queryKey: ["menu"], queryFn: fetchMenu });
   const items = !isError && data ? data.filter((i) => i.category === cat) : [];
 
   return (

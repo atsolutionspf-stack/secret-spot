@@ -3,7 +3,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "motion/react";
 import { AlertTriangle, ArrowLeft, CheckCircle2, Clock, FlaskConical, MapPin, Phone, ShoppingBag, Store } from "lucide-react";
 import { toast } from "sonner";
-import { apiGet } from "@/lib/api";
+import { fetchMenu } from "@/lib/data";
 import { useI18n } from "@/lib/i18n";
 import { queryClient } from "@/lib/queryClient";
 import { SITE, formatPrice } from "@/lib/site";
@@ -316,7 +316,7 @@ function DoneStep({ result }: { result: OrderResult }) {
 export default function OrderSheet() {
   const { t, lang } = useI18n();
   const cart = useCart();
-  const menuQ = useQuery({ queryKey: ["menu"], queryFn: () => apiGet<MenuItem[]>("/menu") });
+  const menuQ = useQuery({ queryKey: ["menu"], queryFn: fetchMenu });
   const cfgQ = useOrderConfig();
   const menu = useMemo(() => (menuQ.data && !menuQ.isError ? menuQ.data : []), [menuQ.data, menuQ.isError]);
   const config = cfgQ.data && !cfgQ.isError ? cfgQ.data : null;

@@ -2,7 +2,7 @@ import { useState, type FormEvent } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Clock, Mail, MapPin, Phone } from "lucide-react";
 import { toast } from "sonner";
-import { apiPost } from "@/lib/api";
+import { createMessage } from "@/lib/data";
 import { useI18n } from "@/lib/i18n";
 import { SITE } from "@/lib/site";
 import type { Message, MessageCreate } from "@/lib/types";
@@ -20,7 +20,7 @@ export default function ContactSection() {
   const set = (k: keyof MessageCreate, v: string) => setForm((f) => ({ ...f, [k]: v }));
 
   const mutation = useMutation({
-    mutationFn: (body: MessageCreate) => apiPost<Message>("/messages", body),
+    mutationFn: (body: MessageCreate) => createMessage(body),
     onSuccess: () => {
       toast.success(t.contact.sent);
       setForm(EMPTY);

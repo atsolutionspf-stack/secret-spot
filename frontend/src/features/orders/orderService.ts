@@ -1,30 +1,26 @@
 // The single place the UI talks to the order backend. The UI never knows where orders are stored:
-// the backend decides (demo store today, Supabase once DATABASE_URL is configured).
+// Supabase RPCs create_order / order_config validate hours, items and prices server-side.
 import { useQuery } from "@tanstack/react-query";
-import { ApiError, apiGet, apiPost } from "@/lib/api";
+import { createOrder, errorCode, fetchOrderConfig as fetchConfig } from "@/lib/data";
 import type { OrderConfig, OrderCreate, OrderResult } from "./types";
 
 export const orderKeys = { config: ["orders", "config"] as const };
 
 export function fetchOrderConfig(): Promise<OrderConfig> {
-  return apiGet<OrderConfig>("/orders/config");
+  return fetchConfig();
 }
 
 export function submitOrder(body: OrderCreate): Promise<OrderResult> {
-  return apiPost<OrderResult>("/orders", body);
+  return createOrder(body);
 }
 
 export function useOrderConfig() {
   return useQuery({ queryKey: orderKeys.config, queryFn: fetchOrderConfig, refetchInterval: 60_000 });
 }
 
-/** Error code from a failed submit (backend sends {detail: "<code>"}). */
+/** Error code from a failed submit (the Supabase function raises the code as its message). */
 export function orderErrorCode(err: unknown): string {
-  if (err instanceof ApiError && err.body && typeof err.body === "object" && "detail" in err.body) {
-    const d = (err.body as { detail: unknown }).detail;
-    if (typeof d === "string") return d;
-  }
-  return "generic";
+  return errorCode(err);
 }
 
 /**

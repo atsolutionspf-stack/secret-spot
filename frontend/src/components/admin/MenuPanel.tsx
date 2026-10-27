@@ -2,7 +2,7 @@ import { useState, type FormEvent } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Eye, EyeOff, Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { apiDelete, apiGet, apiPatch, apiPost } from "@/lib/api";
+import { adminMenu, deleteMenuItem, saveMenuItem } from "@/lib/data";
 import { useI18n } from "@/lib/i18n";
 import { queryClient } from "@/lib/queryClient";
 import { formatPrice } from "@/lib/site";
@@ -34,7 +34,7 @@ function ItemDialog({ item, open, onClose }: { item: MenuItem | null; open: bool
   const set = <K extends keyof MenuItemCreate>(k: K, v: MenuItemCreate[K]) => setForm((f) => ({ ...f, [k]: v }));
 
   const save = useMutation({
-    mutationFn: (body: MenuItemCreate) => (item ? apiPatch<MenuItem>(`/admin/menu/${item.id}`, body as MenuItemUpdate) : apiPost<MenuItem>("/admin/menu", body)),
+    mutationFn: (body: MenuItemCreate) => saveMenuItem(item ? item.id : null, body),
     onSuccess: () => {
       toast.success(t.admin.saved);
       invalidate();
@@ -126,9 +126,9 @@ export default function MenuPanel() {
   const [editing, setEditing] = useState<MenuItem | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogKey, setDialogKey] = useState(0);
-  const q = useQuery({ queryKey: ["admin", "menu"], queryFn: () => apiGet<MenuItem[]>("/admin/menu") });
+  const q = useQuery({ queryKey: ["admin", "menu"], queryFn: adminMenu });
   const toggle = useMutation({
-    mutationFn: (m: MenuItem) => apiPatch<MenuItem>(`/admin/menu/${m.id}`, { available: !m.available } satisfies MenuItemUpdate),
+    mutationFn: (m: MenuItem) => saveMenuItem(m.id, { available: !m.available } satisfies MenuItemUpdate),
     onSuccess: () => {
       toast.success(t.admin.updated);
       invalidate();
@@ -136,7 +136,7 @@ export default function MenuPanel() {
     onError: () => toast.error(t.admin.error),
   });
   const del = useMutation({
-    mutationFn: (id: string) => apiDelete<void>(`/admin/menu/${id}`),
+    mutationFn: (id: string) => deleteMenuItem(id),
     onSuccess: () => {
       toast.success(t.admin.deleted);
       invalidate();

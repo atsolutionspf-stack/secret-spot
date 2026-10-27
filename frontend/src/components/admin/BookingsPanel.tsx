@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Mail, MessageSquareText, Phone, Users } from "lucide-react";
 import { toast } from "sonner";
-import { apiGet, apiPatch } from "@/lib/api";
+import { listBookings, updateBookingStatus } from "@/lib/data";
 import { useI18n } from "@/lib/i18n";
 import { queryClient } from "@/lib/queryClient";
 import { formatDate } from "@/lib/site";
@@ -28,10 +28,10 @@ export default function BookingsPanel() {
   const [filter, setFilter] = useState<string>("all");
   const q = useQuery({
     queryKey: ["admin", "bookings", filter],
-    queryFn: () => apiGet<Booking[]>(`/admin/bookings${filter === "all" ? "" : `?status=${filter}`}`),
+    queryFn: () => listBookings(filter),
   });
   const update = useMutation({
-    mutationFn: ({ id, body }: { id: string; body: BookingStatusUpdate }) => apiPatch<Booking>(`/admin/bookings/${id}`, body),
+    mutationFn: ({ id, body }: { id: string; body: BookingStatusUpdate }) => updateBookingStatus(id, body.status),
     onSuccess: () => {
       toast.success(t.admin.updated);
       queryClient.invalidateQueries({ queryKey: ["admin", "bookings"] });
