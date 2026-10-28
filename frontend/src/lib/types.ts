@@ -8,6 +8,7 @@ export interface MenuItemBase {
   category: Category;
   description_es: string;
   description_en: string;
+  ingredients: string | null;
   price: number;
   price_note: string;
   tags: Tag[];
