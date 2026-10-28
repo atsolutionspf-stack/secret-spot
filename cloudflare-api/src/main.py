@@ -109,5 +109,6 @@ async def get_order_config(request: Request):
             detail=f"No se pudo consultar la configuración de pedidos: {type(exc).__name__}",
         )
 
+# Prueba de compilación de pedidos
 
 Default = asgi.entrypoint(app)
