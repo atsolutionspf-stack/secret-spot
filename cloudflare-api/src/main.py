@@ -37,7 +37,7 @@ async def get_menu(request: Request):
         params = urlencode({
             "select": (
                 "id,name,category,description_es,description_en,"
-                "price,price_note,tags,allergens,available,sort_order"
+                "ingredients,price,price_note,tags,allergens,available,sort_order"
             ),
             "restaurant_id": f"eq.{restaurant_id}",
             "available": "eq.true",
