@@ -1,12 +1,19 @@
-
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "secret-spot-api",
   "main": "src/main.py",
-  "compatibility_date": "2026-10-26",
-  "compatibility_flags": ["python_workers"],
+  "compatibility_date": "2026-10-27",
+  "compatibility_flags": [
+    "python_workers"
+  ],
   "vars": {
-    "RESTAURANT_ID": "71691b13-c118-4c6e-a554-b50d76de0924",
-    "SUPABASE_URL": "https://pdugenduhfdhnulimvhh.supabase.co"
+    "SUPABASE_URL": "https://pdugenduhfdhnulimvhh.supabase.co",
+    "RESTAURANT_ID": "71691b13-c118-4c6e-a554-b50d76de0924"
+  },
+  "previews": {
+    "vars": {
+      "SUPABASE_URL": "https://pdugenduhfdhnulimvhh.supabase.co",
+      "RESTAURANT_ID": "71691b13-c118-4c6e-a554-b50d76de0924"
+    }
   }
 }
