@@ -75,12 +75,10 @@ async def get_menu(request: Request):
             request,
             f"/rest/v1/menu_items?{params}",
         )
-    except HTTPException:
-        raise
-    except Exception as exc:
+     except Exception as exc:
         raise HTTPException(
             status_code=502,
-            detail=f"No se pudo consultar la carta: {type(exc).__name__}",
+            detail=f"No se pudo consultar la carta: {type(exc).__name__}: {exc}",
         )
 
 
