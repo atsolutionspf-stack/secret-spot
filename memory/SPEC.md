@@ -59,3 +59,8 @@ messages{name, email, phone, subject, message, read, created_at}
 - Testing: use delivered@resend.dev as guest email; owner alerts go to the real inbox.
 
 Not in scope: online ordering/payment, SMS/WhatsApp, capacity checks.
+
+## Cloudflare Worker API (user's repo, branch pedidos-backend)
+- `cloudflare-api/src/main.py` (FastAPI on Python Workers): GET /api/menu, GET /api/orders/config, POST /api/orders (pickup only, pay_at_pickup, status pending).
+- POST /api/orders validates input, checks order_config (accepting + pickup_slots), loads menu_items by server RESTAURANT_ID, computes prices server-side, then calls RPC `create_pickup_order` (cloudflare-api/sql/create_pickup_order.sql) which re-validates and inserts order + lines in one transaction. RPC executable only by service_role.
+- Tests: `cloudflare-api/tests/test_orders.py` (mocked Supabase) and `cloudflare-api/tests/sql/run.sh` (throwaway local Postgres with fake schema).
