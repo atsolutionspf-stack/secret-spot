@@ -15,7 +15,12 @@ app.add_middleware(
 )
 
 
-async def supabase_request(request: Request, path: str, method: str = "GET", body=None):
+async def supabase_request(
+    request: Request,
+    path: str,
+    method: str = "GET",
+    body=None,
+):
     env = request.scope["env"]
     supabase_url = env.SUPABASE_URL.rstrip("/")
     secret_key = env.SUPABASE_SECRET_KEY
@@ -47,7 +52,10 @@ async def supabase_request(request: Request, path: str, method: str = "GET", bod
 
 @app.get("/")
 async def root():
-    return {"status": "ok", "service": "secret-spot-api"}
+    return {
+        "status": "ok",
+        "service": "secret-spot-api",
+    }
 
 
 @app.get("/api/health")
@@ -63,7 +71,8 @@ async def get_menu(request: Request):
     params = urlencode({
         "select": (
             "id,name,category,description_es,description_en,"
-            "ingredients,price,price_note,tags,allergens,available,sort_order"
+            "ingredients,price,price_note,tags,allergens,"
+            "available,sort_order"
         ),
         "restaurant_id": f"eq.{restaurant_id}",
         "available": "eq.true",
@@ -75,10 +84,12 @@ async def get_menu(request: Request):
             request,
             f"/rest/v1/menu_items?{params}",
         )
-     except Exception as exc:
+    except HTTPException:
+        raise
+    except Exception as exc:
         raise HTTPException(
             status_code=502,
-            detail=f"No se pudo consultar la carta: {type(exc).__name__}: {exc}",
+            detail=f"Error interno consultando la carta: {type(exc).__name__}: {exc}",
         )
 
 
@@ -87,16 +98,12 @@ async def get_order_config(request: Request):
     env = request.scope["env"]
     restaurant_id = env.RESTAURANT_ID
 
-    params = urlencode({
-        "p_restaurant_id": f"eq.{restaurant_id}",
-    })
-
     try:
         result = await supabase_request(
             request,
-            f"/rest/v1/rpc/order_config?{params}",
+            "/rest/v1/rpc/order_config",
             method="POST",
-            body={},
+            body={"p_restaurant_id": restaurant_id},
         )
         return result
     except HTTPException:
@@ -104,9 +111,11 @@ async def get_order_config(request: Request):
     except Exception as exc:
         raise HTTPException(
             status_code=502,
-            detail=f"No se pudo consultar la configuración de pedidos: {type(exc).__name__}",
+            detail=(
+                "Error interno consultando la configuración de pedidos: "
+                f"{type(exc).__name__}: {exc}"
+            ),
         )
 
-# Prueba de compilación de pedidos
 
 Default = asgi.entrypoint(app)
