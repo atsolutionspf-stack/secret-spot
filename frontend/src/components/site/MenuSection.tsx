@@ -107,14 +107,30 @@ export default function MenuSection() {
                 >
                   <div className="flex items-start justify-between gap-3">
                     <h3 data-testid="menu-item-name" className="font-heading text-lg font-bold uppercase leading-tight text-white">{item.name}</h3>
-                    <p data-testid="menu-item-price" className="shrink-0 font-mono text-lg font-bold text-amber-400">
-                      {formatPrice(item.price, lang)}
-                      {item.price_note && <span className="ml-1 text-xs font-normal text-stone-400">/{lang === "es" ? item.price_note : t.menu.perUnit}</span>}
-                    </p>
-                  </div>
-                  <p data-testid="menu-item-description" className="mt-2 text-sm leading-relaxed text-stone-400">
-                    {lang === "es" ? item.description_es : item.description_en || item.description_es}
-                  </p>
+                    
+<p data-testid="menu-item-price" className="shrink-0 font-mono text-lg font-bold text-amber-400">
+  {formatPrice(item.price, lang)}
+  {item.price_note && (
+    <span className="ml-1 text-xs font-normal text-stone-400">
+      /{lang === "es" ? item.price_note : t.menu.perUnit}
+    </span>
+  )}
+</p>
+</div>
+
+<p data-testid="menu-item-description" className="mt-2 text-sm leading-relaxed text-stone-400">
+  {lang === "es" ? item.description_es : item.description_en || item.description_es}
+</p>
+
+{item.ingredients?.trim() && (
+  <p className="mt-2 text-xs leading-relaxed text-stone-300">
+    <span className="font-semibold text-amber-400">
+      {lang === "es" ? "Ingredientes: " : "Ingredients: "}
+    </span>
+    {item.ingredients}
+  </p>
+)}
+
                   <div className="mt-auto flex flex-col gap-3 pt-4">
                     {item.tags.length > 0 && (
                       <div className="flex flex-wrap items-center gap-2">
