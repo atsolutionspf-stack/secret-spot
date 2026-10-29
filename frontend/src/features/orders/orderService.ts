@@ -7,7 +7,7 @@ import { fromCents, type CartRow } from "./cart";
 import type { OrderConfig, OrderCreate, OrderResult } from "./types";
 
 /** Flip only after the real POST /api/orders flow has been verified end to end. */
-export const ORDERS_LIVE = false;
+export const ORDERS_LIVE = true;
 
 export const orderKeys = { config: ["orders", "config"] as const };
 
