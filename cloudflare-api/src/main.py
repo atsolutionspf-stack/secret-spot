@@ -335,5 +335,16 @@ async def create_order(request: Request):
         currency=saved.get("currency") or "EUR",
     )
 
+@app.get("/api/debug/routes")
+async def debug_routes():
+    return {
+        "routes": [
+            {
+                "path": getattr(route, "path", ""),
+                "methods": sorted(getattr(route, "methods", []) or []),
+            }
+            for route in app.routes
+        ]
+    }
 
 Default = asgi.entrypoint(app)
