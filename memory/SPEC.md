@@ -66,3 +66,4 @@ Not in scope: online ordering/payment, SMS/WhatsApp, capacity checks.
 - Tests: `cloudflare-api/tests/test_orders.py` (mocked Supabase) and `cloudflare-api/tests/sql/run.sh` (throwaway local Postgres with fake schema).
 - Frontend order config now comes from GET /api/orders/config (lib/api.ts; optional public VITE_API_BASE_URL = Worker origin on Cloudflare Pages). No direct supabase.rpc("order_config").
 - Order submission is TEST MODE only (ORDERS_LIVE=false in features/orders/orderService.ts): built locally, persisted=false, no network.
+- cloudflare-api deploy config: pyproject.toml (fastapi; dev: workers-py, workers-runtime-sdk), uv.lock, wrangler.jsonc (main src/main.py, python_workers, keep_vars). Workers Builds: root dir `cloudflare-api`, deploy command `uv run pywrangler deploy`.

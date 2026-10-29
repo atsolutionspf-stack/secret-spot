@@ -1,0 +1,23 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "secret-spot-api",
+  "main": "src/main.py",
+  "compatibility_date": "2026-10-27",
+  "compatibility_flags": [
+    "python_workers"
+  ],
+  // Do not delete variables already set in the Cloudflare dashboard on deploy.
+  "keep_vars": true,
+  // Public (non-secret) values. SUPABASE_SECRET_KEY is a Worker secret:
+  // set it with `uv run pywrangler secret put SUPABASE_SECRET_KEY` or in the dashboard — never here.
+  "vars": {
+    "SUPABASE_URL": "https://pdugenduhfdhnulimvhh.supabase.co",
+    "RESTAURANT_ID": "71691b13-c118-4c6e-a554-b50d76de0924"
+  },
+  "previews": {
+    "vars": {
+      "SUPABASE_URL": "https://pdugenduhfdhnulimvhh.supabase.co",
+      "RESTAURANT_ID": "71691b13-c118-4c6e-a554-b50d76de0924"
+    }
+  }
+}

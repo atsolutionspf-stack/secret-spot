@@ -1,0 +1,49 @@
+{
+  "iteration": 2,
+  "summary": "5 criteria, all pure backend/config (no UI surface). 2 checks run directly via execute_bash (config inspection, dry-run deploy) + 1 persisted backend test file covering worker boot + orders validation + 1 pytest suite run. All passed.",
+  "passed": 5,
+  "failed": 0,
+  "retest_needed": false,
+  "checks": [
+    {
+      "criterion": "cloudflare-api has the Python Workers config files at its root",
+      "name": "config-inspection (manual)",
+      "lane": "backend",
+      "status": "passed",
+      "evidence": "ls /app/cloudflare-api: pyproject.toml, uv.lock (67958 bytes), wrangler.jsonc, src/, tests/ present. pyproject.toml: requires-python='>=3.13', dependencies=['fastapi'], dependency-groups.dev=['workers-py','workers-runtime-sdk']. wrangler.jsonc: main='src/main.py', compatibility_flags=['python_workers'], keep_vars=true. grep for SUPABASE_SECRET_KEY across *.toml/*.jsonc/*.lock found only comment text (no value) explaining it's set via `pywrangler secret put` — never in config."
+    },
+    {
+      "criterion": "The deploy command resolves pywrangler (the reported 'Failed to spawn: pywrangler' bug)",
+      "name": "pywrangler-dry-run-deploy (manual)",
+      "lane": "backend",
+      "status": "passed",
+      "evidence": "cd /app/cloudflare-api && CI=1 uv run pywrangler deploy --dry-run --outdir /tmp/cf-dist2 -> exit 0. Output: 'wrangler 4.155.0', bindings table shows env.SUPABASE_URL and env.RESTAURANT_ID as Environment Variables, ends with '--dry-run: exiting now.'. No real deploy performed."
+    },
+    {
+      "criterion": "The Worker boots in local workerd and existing routes work",
+      "name": "backend/tests/test_tscheck_cloudflare_worker.py::test_worker_root_and_health",
+      "lane": "backend",
+      "status": "passed",
+      "evidence": "Local `uv run pywrangler dev --port 8787` already running (pid 2992, confirmed via ps). GET http://127.0.0.1:8787/ -> 200 {\"status\":\"ok\",\"service\":\"secret-spot-api\"}; GET /api/health -> 200 {\"status\":\"ok\"}. pytest: 1 passed."
+    },
+    {
+      "criterion": "POST /api/orders validations work inside the Worker",
+      "name": "backend/tests/test_tscheck_cloudflare_worker.py::test_orders_invalid_json_returns_400 + empty payload/items 422",
+      "lane": "backend",
+      "status": "passed",
+      "evidence": "POST /api/orders body '{bad' -> 400 {\"detail\":{\"code\":\"invalid_json\",...}}. POST {} -> 422 {\"detail\":{\"code\":\"invalid_order\",\"fields\":[\"customer_name\",\"customer_phone\",\"items\",\"pickup_time\"]}}. POST {items:[]} -> same 422 invalid_order listing fields. No valid/complete order payload was ever sent. pytest: 3 passed."
+    },
+    {
+      "criterion": "Unit tests for order logic still pass",
+      "name": "cloudflare-api/tests (pytest)",
+      "lane": "backend",
+      "status": "passed",
+      "evidence": "cd /app/cloudflare-api && python -m pytest tests -q -p no:cacheprovider -c /dev/null -> '25 passed in 0.31s'."
+    }
+  ],
+  "bugs": [],
+  "action_items": [
+    "No UI-facing criteria in this briefing (all 5 items are config/API/CLI behavior for the Cloudflare Python Worker) — no browser checks were applicable; frontend is explicitly out of scope per seed_facts.",
+    "Real deployment to Cloudflare was intentionally never attempted (no account access / spec_deviations) — only --dry-run and local workerd were exercised, matching the briefing's guardrail."
+  ]
+}
