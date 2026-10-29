@@ -1,0 +1,48 @@
+{
+  "iteration": 1,
+  "summary": "5 checks run (1 pre-existing backend suite + 1 new backend test + 3 browser checks). All passed.",
+  "passed": 5,
+  "failed": 0,
+  "retest_needed": false,
+  "checks": [
+    {
+      "criterion": "Pre-existing backend order logic/API suite (pricing, slots, rejections, config, persistence=false)",
+      "name": "backend/tests/test_order_logic.py + test_orders_api.py",
+      "lane": "backend",
+      "status": "passed",
+      "evidence": "cd /app/backend && python -m pytest -q -> 17 passed in 1.44s. Covers pickup_slots math, build_order pricing/rejections, GET /orders/config (demo mode open), POST /orders persisted=false with real menu pricing, client-supplied unit_price ignored, 400 rejections for bad pickup_time/item."
+    },
+    {
+      "criterion": "Availability state reflects the API (closed) — real preview backend currently closed",
+      "name": "backend/tests/test_tscheck_orders_config_closed.py",
+      "lane": "backend",
+      "status": "passed",
+      "evidence": "GET http://localhost:8001/api/orders/config -> 200 {\"mode\":\"supabase\",\"accepting\":false,\"reason\":\"closed\",\"pickup_slots\":[],\"prep_minutes\":20}. Matches briefing's current-closed expectation exactly."
+    },
+    {
+      "criterion": "Order sheet gets its config from the backend, not Supabase directly; closed state renders correctly",
+      "name": "order-sheet-uses-backend-config-closed",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Opened sheet via 'Pedir ahora'; captured GET .../api/orders/config response body {accepting:false, reason:'closed', pickup_slots:[]}; order-closed-banner visible; zero requests to any URL containing /rest/v1/rpc/order_config observed throughout. console_errors: []."
+    },
+    {
+      "criterion": "Availability open via intercepted config lets user reach review step; Orders stay in TEST mode (no real create_order call) with correct confirmation",
+      "name": "order-flow-open-test-mode-confirmation",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "page.route intercepted /api/orders/config -> {mode:'supabase',accepting:true,pickup_slots:['20:00','20:15'],prep_minutes:20}; added Cheese Bacon (9,50€), filled name/phone, selected 20:15, reached order-summary, confirmed. order-confirmation data-persisted='false', order number TEST-0RJ7T, PRUEBA\u00b7NO GUARDADO badge, pickup 'Hoy a las 20:15', total 9,50€ matching cart total. Zero requests matched /rest/v1/rpc/create_order or POST /api/orders (config GET excluded). console_errors: []."
+    },
+    {
+      "criterion": "Rest of UI unchanged: menu loads, cart qty +/- and totals work, no console errors",
+      "name": "menu-and-cart-basics-unchanged",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Run against public preview URL https://hidden-spot-menu.preview.emergentagent.com. 26 menu-item-* elements rendered. Added items to cart, used qty stepper increase control, order-total recalculated and displayed non-empty value (screenshot shows Cheese Bacon x2 = 19,00€, Perfecta x1 = 10,00€). console_errors: []."
+    }
+  ],
+  "bugs": [],
+  "action_items": [
+    "Acceptance matrix has 5 criteria (within the 8-criterion limit); all covered by 5 artifacts (2 backend, 3 browser) as itemized above."
+  ]
+}

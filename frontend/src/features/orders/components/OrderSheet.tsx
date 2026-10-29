@@ -17,7 +17,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { TagBadge } from "@/components/site/MenuSection";
 import { fromCents, priceCart, pruneCart, quantityOf, type PricedCart } from "../cart";
 import { useCart } from "../CartProvider";
-import { orderErrorCode, orderKeys, submitOrder, useOrderConfig } from "../orderService";
+import { ORDERS_LIVE, orderErrorCode, orderKeys, submitOrder, useOrderConfig } from "../orderService";
 import type { OrderConfig, OrderCreate, OrderResult } from "../types";
 import { QtyStepper } from "./QtyStepper";
 
@@ -343,7 +343,7 @@ export default function OrderSheet() {
   }, [config, details.pickup_time]);
 
   const submit = useMutation({
-    mutationFn: (body: OrderCreate) => submitOrder(body),
+    mutationFn: (body: OrderCreate) => submitOrder(body, priced.rows),
     onSuccess: (res) => {
       setResult(res);
       setStep("done");
@@ -365,7 +365,7 @@ export default function OrderSheet() {
   });
 
   const accepting = !!config?.accepting;
-  const isDemo = config?.mode !== "supabase";
+  const isDemo = !ORDERS_LIVE;
   const detailsValid =
     details.customer_name.trim().length >= 2 &&
     details.customer_phone.trim().length >= 6 &&

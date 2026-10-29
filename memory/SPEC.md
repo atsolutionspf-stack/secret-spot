@@ -64,3 +64,5 @@ Not in scope: online ordering/payment, SMS/WhatsApp, capacity checks.
 - `cloudflare-api/src/main.py` (FastAPI on Python Workers): GET /api/menu, GET /api/orders/config, POST /api/orders (pickup only, pay_at_pickup, status pending).
 - POST /api/orders validates input, checks order_config (accepting + pickup_slots), loads menu_items by server RESTAURANT_ID, computes prices server-side, then calls RPC `create_pickup_order` (cloudflare-api/sql/create_pickup_order.sql) which re-validates and inserts order + lines in one transaction. RPC executable only by service_role.
 - Tests: `cloudflare-api/tests/test_orders.py` (mocked Supabase) and `cloudflare-api/tests/sql/run.sh` (throwaway local Postgres with fake schema).
+- Frontend order config now comes from GET /api/orders/config (lib/api.ts; optional public VITE_API_BASE_URL = Worker origin on Cloudflare Pages). No direct supabase.rpc("order_config").
+- Order submission is TEST MODE only (ORDERS_LIVE=false in features/orders/orderService.ts): built locally, persisted=false, no network.

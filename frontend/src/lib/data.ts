@@ -1,6 +1,7 @@
 // All data access for the site goes through here (Supabase: tables under RLS + public RPCs).
 // Public writes only happen through SQL functions that validate hours, inputs and prices
 // (see backend/alembic/versions/0002_full_supabase.sql).
+import { apiGet } from "./api";
 import { supabase } from "./supabase";
 import type {
   AdminStats,
@@ -13,7 +14,7 @@ import type {
   Message,
   MessageCreate,
 } from "./types";
-import type { OrderConfig, OrderCreate, OrderResult } from "@/features/orders/types";
+import type { OrderConfig } from "@/features/orders/types";
 
 export class DataError extends Error {
   code: string;
@@ -54,14 +55,16 @@ export async function createMessage(body: MessageCreate): Promise<{ id: string }
   return m;
 }
 
+/** Order config comes from the Cloudflare Worker (it holds RESTAURANT_ID + the server key). */
 export async function fetchOrderConfig(): Promise<OrderConfig> {
-  return check<OrderConfig>(await supabase.rpc("order_config"));
-}
-
-export async function createOrder(body: OrderCreate): Promise<OrderResult> {
-  const r = check<OrderResult>(await supabase.rpc("create_order", { p: body }));
-  notify("order", r.order.id);
-  return r;
+  const c = await apiGet<Partial<OrderConfig>>("/orders/config");
+  return {
+    mode: c.mode ?? "supabase",
+    accepting: c.accepting === true,
+    reason: c.reason ?? (c.accepting === true ? null : "closed"),
+    pickup_slots: Array.isArray(c.pickup_slots) ? c.pickup_slots.map(String) : [],
+    prep_minutes: typeof c.prep_minutes === "number" ? c.prep_minutes : 20,
+  };
 }
 
 // ---------- Admin (RLS: only users listed in public.admins) ----------
