@@ -52,7 +52,7 @@ const es = {
     burgersNote: "Todas nuestras burgers vienen acompañadas de patatas.",
     allergens: "Alérgenos",
     allergenLegend: "Leyenda de alérgenos",
-    allergenNames: ["Gluten", "Crustáceos", "Huevos", "Pescado", "Cacahuete", "Soja", "Frutos secos", "Apio", "Mostaza", "Lácteos", "Sésamo", "Sulfitos", "Moluscos", "Altramuces"],
+    allergenNames: ["Gluten", "Crustaceans", "Eggs", "Fish", "Peanuts", "Soy", "Dairy", "Tree nuts", "Celery", "Mustard", "Sesame", "Sulphites", "Lupin", "Molluscs"],
     allergenHint: "Si tienes alguna alergia o intolerancia, avísanos al pedir.",
     perUnit: "ud.",
     empty: "La carta no está disponible ahora mismo. ¡Vuelve en un momento!",
