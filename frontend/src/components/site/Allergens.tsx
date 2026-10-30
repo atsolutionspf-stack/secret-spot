@@ -3,7 +3,7 @@ import type { LucideIcon } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 
 // Index 0 = allergen #1. Numbering follows the restaurant's own list.
-const ICONS: LucideIcon[] = [Wheat, Shrimp, Egg, Fish, Nut, Bean, Nut, Carrot, CircleDot, Milk, Sprout, Wine, Shell, Flower];
+const ICONS: LucideIcon[] = [Wheat, Shrimp, Egg, Fish, Nut, Bean, Milk, Nut, Carrot, CircleDot, Sprout, Wine, Flower, Shell];
 
 /** "1, 3, 10" → [1, 3, 10] (ignores anything outside 1–14). */
 export function parseAllergens(raw: string): number[] {
