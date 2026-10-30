@@ -296,7 +296,7 @@ const en: Dict = {
     burgersNote: "All our burgers come with fries.",
     allergens: "Allergens",
     allergenLegend: "Allergen key",
-    allergenNames: ["Gluten", "Crustaceans", "Eggs", "Fish", "Peanuts", "Soy", "Tree nuts", "Celery", "Mustard", "Dairy", "Sesame", "Sulphites", "Molluscs", "Lupin"],
+    allergenNames: ["Gluten", "Crustaceans", "Eggs", "Fish", "Peanuts", "Soy", "Dairy", "Tree nuts", "Celery", "Mustard", "Sesame", "Sulphites", "Lupin", "Molluscs"],
     allergenHint: "If you have any allergy or intolerance, please tell us when ordering.",
     perUnit: "each",
     empty: "The menu isn't available right now. Check back in a moment!",
