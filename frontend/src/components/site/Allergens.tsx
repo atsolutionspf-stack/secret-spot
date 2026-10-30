@@ -5,16 +5,33 @@ import { useI18n } from "@/lib/i18n";
 // Index 0 = allergen #1. Numbering follows the restaurant's own list.
 const ICONS: LucideIcon[] = [Wheat, Shrimp, Egg, Fish, Nut, Bean, Milk, Nut, Carrot, CircleDot, Sprout, Wine, Flower, Shell];
 
-/** "1, 3, 10" → [1, 3, 10] (ignores anything outside 1–14). */
+/** Converts allergen names into their corresponding numbers (1–14). */
 export function parseAllergens(raw: string): number[] {
-  return Array.from(
-    new Set(
-      raw
-        .split(/[^0-9]+/)
-        .map(Number)
-        .filter((n) => Number.isInteger(n) && n >= 1 && n <= 14),
-    ),
-  ).sort((a, b) => a - b);
+  const normalized = raw
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+
+  const rules: [number, RegExp][] = [
+    [1, /gluten/],
+    [2, /crustaceos/],
+    [3, /huevos?/],
+    [4, /pescado/],
+    [5, /cacahuetes?|mani/],
+    [6, /soja/],
+    [7, /lacteos?|leche/],
+    [8, /frutos secos|almendras?|nueces|avellanas?/],
+    [9, /apio/],
+    [10, /mostaza/],
+    [11, /sesamo/],
+    [12, /sulfitos?|dioxido de azufre/],
+    [13, /altramuces?/],
+    [14, /moluscos/],
+  ];
+
+  return rules
+    .filter(([, pattern]) => pattern.test(normalized))
+    .map(([number]) => number);
 }
 
 export function AllergenChips({ raw }: { raw: string }) {
