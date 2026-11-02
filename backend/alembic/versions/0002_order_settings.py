@@ -47,13 +47,13 @@ def upgrade() -> None:
     op.execute(
         """
         INSERT INTO opening_hours (weekday, open_from_min, close_len_min) VALUES
-        (0, NULL, NULL),  -- lunes: cerrado (cambia según lib/hours.py)
-        (1, 780, 180),    -- martes
-        (2, 780, 180),    -- miércoles
-        (3, 780, 180),    -- jueves
-        (4, 780, 180),    -- viernes
-        (5, 780, 240),    -- sábado
-        (6, 780, 240)     -- domingo
+        (0, NULL, NULL),   -- lunes: cerrado
+        (1, NULL, NULL),   -- martes: cerrado
+        (2, NULL, NULL),   -- miércoles: cerrado
+        (3, 1140, 300),    -- jueves: 19:00 a 00:00
+        (4, 1140, 360),    -- viernes: 19:00 a 01:00
+        (5, 1140, 360),    -- sábado: 19:00 a 01:00
+        (6, 1140, 360)     -- domingo: 19:00 a 01:00
         """
     )
 
