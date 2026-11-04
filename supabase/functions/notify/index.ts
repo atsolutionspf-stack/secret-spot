@@ -75,11 +75,23 @@ const GUEST = {
 function guestEmail(b: any, kind: keyof typeof GUEST) {
   const lang: "es" | "en" = b.lang === "en" ? "en" : "es";
   const [subject, title, intro] = GUEST[kind][lang];
-  const L = lang === "es" ? ["Código", "Fecha", "Hora", "Personas"] : ["Code", "Date", "Time", "Guests"];
-  const inner = `<p style="margin:0 0 8px;font-size:15px;line-height:1.6">${intro.replace("{n}", esc(b.name))}</p>` +
-    rows([[L[0], `<strong>${esc(b.code)}</strong>`], [L[1], esc(fmtDate(b.date, lang))], [L[2], esc(b.time)], [L[3], String(b.party_size)]]) +
+  const L = lang === "es"
+    ? ["Código", "Fecha", "Hora", "Personas"]
+    : ["Code", "Date", "Time", "Guests"];
+
+  const time = String(b.reservation_time ?? "").slice(0, 5);
+
+  const inner =
+    `<p style="margin:0 0 8px;font-size:15px;line-height:1.6">${intro.replace("{n}", esc(b.customer_name))}</p>` +
+    rows([
+      [L[0], `<strong>${esc(b.code)}</strong>`],
+      [L[1], esc(fmtDate(b.reservation_date, lang))],
+      [L[2], esc(time)],
+      [L[3], String(b.party_size)],
+    ]) +
     `<p style="margin:0 0 20px;font-size:14px;color:#A8A29E">${lang === "es" ? "¿Necesitas cambiar algo? Llámanos al" : "Need to change something? Call us on"} ${tel(PHONE)}.</p>` +
     button(`${SITE}/`, "Secret Spot");
+
   return [`${subject} · Secret Spot`, layout(title, inner, lang)] as const;
 }
 
