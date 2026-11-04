@@ -44,7 +44,20 @@ export async function fetchMenu(): Promise<MenuItem[]> {
 }
 
 export async function createBooking(body: BookingCreate): Promise<Booking> {
-  const b = check<Booking>(await supabase.rpc("create_booking", { p: body }));
+  const b = check<Booking>(
+    await supabase.rpc("create_booking", { p: body })
+  );
+
+  if (
+    !b ||
+    typeof b.date !== "string" ||
+    typeof b.time !== "string" ||
+    typeof b.id !== "string" ||
+    typeof b.code !== "string"
+  ) {
+    throw new DataError("invalid_booking_response");
+  }
+
   notify("booking", b.id);
   return b;
 }
