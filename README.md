@@ -24,7 +24,7 @@ cd backend && uvicorn server:app --host 0.0.0.0 --port 8001 --reload   # http://
 cd frontend && yarn dev                                                # http://localhost:3000
 ```
 
-## The `/api` proxy convention
+## The `/api` proxy convention 
 
 Every backend route lives under `/api` (the backend mounts one
 `APIRouter(prefix="/api")`), and the frontend dev server
