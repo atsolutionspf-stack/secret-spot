@@ -36,12 +36,32 @@ export function formatPrice(value: number, lang: "es" | "en"): string {
   }).format(value);
 }
 
+
 export function formatDate(iso: string, lang: "es" | "en"): string {
-  const [y, m, d] = iso.split("-").map(Number);
-  return new Intl.DateTimeFormat(lang === "es" ? "es-ES" : "en-GB", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    timeZone: "UTC",
-  }).format(new Date(Date.UTC(y, m - 1, d)));
+  if (!iso || typeof iso !== "string") return "";
+
+  const match = iso.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!match) return "";
+
+  const [, y, m, d] = match;
+  const date = new Date(Date.UTC(Number(y), Number(m) - 1, Number(d)));
+
+  if (
+    date.getUTCFullYear() !== Number(y) ||
+    date.getUTCMonth() !== Number(m) - 1 ||
+    date.getUTCDate() !== Number(d)
+  ) {
+    return "";
+  }
+
+  return new Intl.DateTimeFormat(
+    lang === "es" ? "es-ES" : "en-GB",
+    {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      timeZone: "UTC",
+    }
+  ).format(date);
 }
+
