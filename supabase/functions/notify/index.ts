@@ -187,32 +187,49 @@ async function handle(type: string, id: string) {
 
       if (b.notes) r.push(["Comentarios", esc(b.notes)]);
 
-      // Mark each notification only after Resend confirms it was accepted.
-      if (!b.owner_notified && OWNER) {
-        await send(
-          OWNER,
-          `Nueva reserva: ${b.customer_name} · ${date} ${time} · ${b.party_size} pers.`,
-          layout(
-            "Nueva reserva",
-            `<p style="margin:0 0 8px;font-size:15px">Nueva solicitud de reserva, <strong style="color:#F59E0B">pendiente</strong> de confirmar.</p>${rows(r)}${button(`${SITE}/admin`, "Abrir el panel")}`,
-          ),
-        );
+      // Attempt both recipients independently. Mark each notification only after
+      // Resend accepts that specific email, so failed sends remain retryable.
+      const notificationErrors: string[] = [];
 
-        const { error: ownerUpdateError } = await db
-          .from("reservations")
-          .update({ owner_notified: true })
-          .eq("id", id);
-        if (ownerUpdateError) throw ownerUpdateError;
+      if (!b.owner_notified && OWNER) {
+        try {
+          await send(
+            OWNER,
+            `Nueva reserva: ${b.customer_name} · ${date} ${time} · ${b.party_size} pers.`,
+            layout(
+              "Nueva reserva",
+              `<p style="margin:0 0 8px;font-size:15px">Nueva solicitud de reserva, <strong style="color:#F59E0B">pendiente</strong> de confirmar.</p>${rows(r)}${button(`${SITE}/admin`, "Abrir el panel")}`,
+            ),
+          );
+
+          const { error: ownerUpdateError } = await db
+            .from("reservations")
+            .update({ owner_notified: true })
+            .eq("id", id);
+          if (ownerUpdateError) throw ownerUpdateError;
+        } catch (error) {
+          console.error("owner notification failed", error);
+          notificationErrors.push("owner");
+        }
       }
 
       if (b.email && b.guest_notified_status !== "received") {
-        await send(b.email, ...guestEmail(b, "received"));
+        try {
+          await send(b.email, ...guestEmail(b, "received"));
 
-        const { error: guestUpdateError } = await db
-          .from("reservations")
-          .update({ guest_notified_status: "received" })
-          .eq("id", id);
-        if (guestUpdateError) throw guestUpdateError;
+          const { error: guestUpdateError } = await db
+            .from("reservations")
+            .update({ guest_notified_status: "received" })
+            .eq("id", id);
+          if (guestUpdateError) throw guestUpdateError;
+        } catch (error) {
+          console.error("guest notification failed", error);
+          notificationErrors.push("guest");
+        }
+      }
+
+      if (notificationErrors.length) {
+        throw new Error(`booking notification failed: ${notificationErrors.join(", ")}`);
       }
     }
 
