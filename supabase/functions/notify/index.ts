@@ -174,12 +174,7 @@ async function handle(type: string, id: string) {
     const time = String(b.reservation_time ?? "").slice(0, 5);
     const date = fmtDate(b.reservation_date, "es");
 
-    if (type === "booking" && !b.owner_notified) {
-      await db
-        .from("reservations")
-        .update({ owner_notified: true })
-        .eq("id", id);
-
+    if (type === "booking") {
       const r: [string, string][] = [
         ["Código", `<strong>${esc(b.code)}</strong>`],
         ["Fecha", esc(date)],
@@ -192,16 +187,33 @@ async function handle(type: string, id: string) {
 
       if (b.notes) r.push(["Comentarios", esc(b.notes)]);
 
-      await send(
-        OWNER,
-        `Nueva reserva: ${b.customer_name} · ${date} ${time} · ${b.party_size} pers.`,
-        layout(
-          "Nueva reserva",
-          `<p style="margin:0 0 8px;font-size:15px">Nueva solicitud de reserva, <strong style="color:#F59E0B">pendiente</strong> de confirmar.</p>${rows(r)}${button(`${SITE}/admin`, "Abrir el panel")}`,
-        ),
-      );
+      // Mark each notification only after Resend confirms it was accepted.
+      if (!b.owner_notified && OWNER) {
+        await send(
+          OWNER,
+          `Nueva reserva: ${b.customer_name} · ${date} ${time} · ${b.party_size} pers.`,
+          layout(
+            "Nueva reserva",
+            `<p style="margin:0 0 8px;font-size:15px">Nueva solicitud de reserva, <strong style="color:#F59E0B">pendiente</strong> de confirmar.</p>${rows(r)}${button(`${SITE}/admin`, "Abrir el panel")}`,
+          ),
+        );
 
-      await send(b.email, ...guestEmail(b, "received"));
+        const { error: ownerUpdateError } = await db
+          .from("reservations")
+          .update({ owner_notified: true })
+          .eq("id", id);
+        if (ownerUpdateError) throw ownerUpdateError;
+      }
+
+      if (b.email && b.guest_notified_status !== "received") {
+        await send(b.email, ...guestEmail(b, "received"));
+
+        const { error: guestUpdateError } = await db
+          .from("reservations")
+          .update({ guest_notified_status: "received" })
+          .eq("id", id);
+        if (guestUpdateError) throw guestUpdateError;
+      }
     }
 
     if (
@@ -209,12 +221,13 @@ async function handle(type: string, id: string) {
       (b.status === "confirmed" || b.status === "cancelled") &&
       b.guest_notified_status !== b.status
     ) {
-      await db
+      await send(b.email, ...guestEmail(b, b.status));
+
+      const { error: statusUpdateError } = await db
         .from("reservations")
         .update({ guest_notified_status: b.status })
         .eq("id", id);
-
-      await send(b.email, ...guestEmail(b, b.status));
+      if (statusUpdateError) throw statusUpdateError;
     }
 
     return;
