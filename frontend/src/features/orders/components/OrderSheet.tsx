@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "motion/react";
 import { AlertTriangle, ArrowLeft, CheckCircle2, Clock, FlaskConical, MapPin, Phone, ShoppingBag, Store } from "lucide-react";
@@ -208,6 +209,7 @@ function DetailsStep({ details, setDetails, config }: { details: Details; setDet
         </div>
         <Textarea id="o-notes" data-testid="order-notes-input" maxLength={500} placeholder={t.order.notesPh} className="min-h-24 rounded-xl border-white/10 bg-[#141923] text-base text-white placeholder:text-stone-500" value={details.notes} onChange={(e) => set("notes", e.target.value)} />
       </div>
+      <p className="text-xs leading-relaxed text-stone-400">Tus datos se utilizarán para gestionar y preparar tu pedido. Consulta nuestra <Link to="/privacidad" className="text-amber-400 underline underline-offset-2">Política de Privacidad</Link>.</p>
     </div>
   );
 }
