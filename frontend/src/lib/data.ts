@@ -29,6 +29,23 @@ function check<T>(res: { data: unknown; error: { message: string } | null }): T 
   return res.data as T;
 }
 
+// Prevent an unavailable or stuck auth storage lock from leaving /admin loading forever.
+function withTimeout<T>(promise: PromiseLike<T>, ms: number, code: string): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new DataError(code)), ms);
+    Promise.resolve(promise).then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (error: unknown) => {
+        clearTimeout(timer);
+        reject(error);
+      },
+    );
+  });
+}
+
 export const errorCode = (e: unknown): string => (e instanceof DataError ? e.code : "generic");
 
 /** Fire-and-forget email notification (Supabase Edge Function "notify"). Never blocks the UI. */
@@ -82,9 +99,9 @@ export async function fetchOrderConfig(): Promise<OrderConfig> {
 
 // ---------- Admin (RLS: only users listed in public.admins) ----------
 export async function isAdmin(): Promise<boolean> {
-  const { data: s } = await supabase.auth.getSession();
+  const { data: s } = await withTimeout(supabase.auth.getSession(), 8000, "auth_timeout");
   if (!s.session) return false;
-  return check<boolean>(await supabase.rpc("is_admin"));
+  return check<boolean>(await withTimeout(supabase.rpc("is_admin"), 8000, "admin_check_timeout"));
 }
 
 export async function fetchStats(today: string): Promise<AdminStats> {
