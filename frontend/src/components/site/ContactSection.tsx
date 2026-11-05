@@ -1,6 +1,5 @@
 import { useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
-import { Link } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import { Clock, Mail, MapPin, Phone } from "lucide-react";
 import { toast } from "sonner";
