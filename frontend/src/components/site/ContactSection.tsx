@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import { Clock, Mail, MapPin, Phone } from "lucide-react";
 import { toast } from "sonner";
@@ -135,6 +136,7 @@ export default function ContactSection() {
                 onChange={(e) => set("message", e.target.value)}
               />
             </div>
+            <p className="text-xs leading-relaxed text-stone-400 sm:col-span-2">Tus datos serán tratados por Secret Spot para atender tu consulta y responderte. Consulta nuestra <Link to="/privacidad" className="text-amber-400 underline underline-offset-2">Política de Privacidad</Link>.</p>
             <button
               type="submit"
               data-testid="contact-submit-button"
