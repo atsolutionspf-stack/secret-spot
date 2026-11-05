@@ -34,7 +34,11 @@ export function Footer() {
       </div>
       <div className="mx-auto flex max-w-7xl flex-col gap-3 border-t border-white/5 px-4 pt-6 text-xs text-stone-500 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
         <p>© {new Date().getFullYear()} Secret Spot · {t.footer.rights}</p>
-        <div className="flex gap-5">
+        <div className="flex flex-wrap gap-5">
+          <Link to="/aviso-legal" data-testid="footer-legal-notice-link" className="hover:text-white">Aviso legal</Link>
+          <Link to="/privacidad" data-testid="footer-privacy-link" className="hover:text-white">Privacidad</Link>
+          <Link to="/cookies" data-testid="footer-cookies-link" className="hover:text-white">Cookies</Link>
+          <Link to="/condiciones" data-testid="footer-terms-link" className="hover:text-white">Reservas y pedidos</Link>
           <Dialog>
             <DialogTrigger data-testid="footer-legal-button" className="hover:text-white">{t.footer.legal}</DialogTrigger>
             <DialogContent data-testid="legal-dialog" className="border-white/10 bg-[#141923] text-stone-200">
