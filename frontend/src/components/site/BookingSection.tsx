@@ -1,5 +1,6 @@
 import { useMemo, useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "motion/react";
 import { format } from "date-fns";
@@ -231,6 +232,8 @@ export default function BookingSection() {
                       onChange={(e) => set("note", e.target.value)}
                     />
                   </div>
+
+                  <p className="text-xs leading-relaxed text-stone-400 sm:col-span-2">Al enviar esta solicitud, tus datos serán tratados por Secret Spot para gestionar tu reserva y contactar contigo si fuera necesario. Consulta nuestra <Link to="/privacidad" className="text-amber-400 underline underline-offset-2">Política de Privacidad</Link>.</p>
 
                   <button
                     type="submit"
