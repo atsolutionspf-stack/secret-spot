@@ -12,6 +12,7 @@ export interface OrderItemIn {
 export interface OrderCreate {
   customer_name: string;
   customer_phone: string;
+  customer_email: string;
   notes: string;
   pickup_time: string; // "HH:MM", one of OrderConfig.pickup_slots
   items: OrderItemIn[];
@@ -30,6 +31,7 @@ export interface Order {
   order_number: string;
   customer_name: string;
   customer_phone: string;
+  customer_email: string;
   notes: string;
   pickup_at: string; // ISO datetime (Europe/Madrid offset)
   pickup_time: string;
