@@ -41,7 +41,7 @@ begin
      or coalesce(length(trim(p_customer_name)), 0) not between 2 and 80
      or coalesce(length(trim(p_customer_phone)), 0) not between 6 and 20
      or coalesce(length(trim(p_customer_email)), 0) not between 5 and 254
-     or trim(p_customer_email) !~* '^[^[:space:]@]+@[^[:space:]@]+\\.[^[:space:]@]+
+     or trim(p_customer_email) !~* '^[^[:space:]@]+@[^[:space:]@]+[.][^[:space:]@]+$'
      or coalesce(length(p_pickup_time), 0) not between 4 and 40
      or exists (
        select 1 from jsonb_array_elements(p_items) e
