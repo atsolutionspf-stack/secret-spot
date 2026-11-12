@@ -17,6 +17,7 @@ app.add_middleware(
     allow_origins=[
         "https://secret-spot.pages.dev",
         "https://email-required-order-notific.secret-spot.pages.dev",
+        "https://7a827be4.secret-spot.pages.dev",
     ],
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["Content-Type"],
