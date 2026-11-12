@@ -149,7 +149,7 @@ $$;
 -- Only the backend (service_role) may call it; never anon/authenticated browsers.
 revoke all on function public.create_pickup_order(uuid, text, text, text, text, text, jsonb, numeric)
   from public, anon, authenticated;
-grant execute on function public.create_pickup_order(uuid, text, text, text, text, jsonb, numeric)
+grant execute on function public.create_pickup_order(uuid, text, text, text, text, text, jsonb, numeric)
   to service_role;
 
      or coalesce(length(p_notes), 0) > 500
@@ -258,7 +258,7 @@ end;
 $$;
 
 -- Only the backend (service_role) may call it; never anon/authenticated browsers.
-revoke all on function public.create_pickup_order(uuid, text, text, text, text, jsonb, numeric)
+revoke all on function public.create_pickup_order(uuid, text, text, text, text, text, jsonb, numeric)
   from public, anon, authenticated;
-grant execute on function public.create_pickup_order(uuid, text, text, text, text, jsonb, numeric)
+grant execute on function public.create_pickup_order(uuid, text, text, text, text, text, jsonb, numeric)
   to service_role;
