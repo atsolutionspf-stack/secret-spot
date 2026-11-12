@@ -283,16 +283,33 @@ async function handle(type: string, id: string) {
   }
 
   // ORDERS
-  if (type === "order") {
+  if (type === "order" || type === "order_status") {
     const { data: o } = await db
       .from("orders")
       .select("*, order_items(*)")
       .eq("id", id)
       .single();
 
-    if (!o || o.owner_notified) return;
+    if (!o) return;
 
-    await db.from("orders").update({ owner_notified: true }).eq("id", id);
+    if (type === "order_status") {
+      const status = String(o.status);
+      const templates: Record<string, [string, string, string]> = {
+        preparing: ["Tu pedido está en preparación", "¡Estamos preparando tu pedido!", "Hemos empezado a preparar tu pedido. Te avisaremos cuando esté listo para recoger."],
+        ready: ["Tu pedido está listo", "¡Tu pedido está listo!", "Ya puedes venir a Secret Spot a recoger tu pedido."],
+        cancelled: ["Tu pedido ha sido cancelado", "Pedido cancelado", "Tu pedido ha sido cancelado. Si tienes dudas, llámanos y te ayudaremos."],
+      };
+      const template = templates[status];
+      if (!template || !o.customer_email || o.customer_notified_status === status) return;
+      const pickup = new Intl.DateTimeFormat("es-ES", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Madrid" }).format(new Date(o.pickup_at));
+      const inner = "<p>" + template[2] + "</p>" + rows([["Pedido", "<strong>" + esc(o.order_number) + "</strong>"], ["Recogida", esc(pickup)]]);
+      await send(o.customer_email, template[0] + " · " + o.order_number, layout(template[1], inner));
+      const { error: statusUpdateError } = await db.from("orders").update({ customer_notified_status: status }).eq("id", id);
+      if (statusUpdateError) throw statusUpdateError;
+      return;
+    }
+
+    if (o.owner_notified && (!o.customer_email || o.customer_notified_status === "received")) return;
 
     const time = new Intl.DateTimeFormat("es-ES", {
       hour: "2-digit",
@@ -318,7 +335,8 @@ async function handle(type: string, id: string) {
 
     if (o.notes) r.push(["Observaciones", esc(o.notes)]);
 
-    await send(
+    if (!o.owner_notified && OWNER) {
+      await send(
       OWNER,
       `Nuevo pedido para recoger ${o.order_number} · ${time} · ${eur(o.total)}`,
       layout(
@@ -327,7 +345,17 @@ async function handle(type: string, id: string) {
 <table width="100%" style="background:#0B0E14;border-radius:12px;padding:12px 16px;margin:0 0 20px">${items}
 <tr><td style="padding-top:10px;border-top:1px solid #232B3B;color:#fff;font-weight:bold">Total</td><td style="padding-top:10px;border-top:1px solid #232B3B;color:#F59E0B;font-weight:bold;text-align:right">${eur(o.total)}</td></tr></table>`,
       ),
-    );
+      );
+      const { error: ownerUpdateError } = await db.from("orders").update({ owner_notified: true }).eq("id", id);
+      if (ownerUpdateError) throw ownerUpdateError;
+    }
+
+    if (o.customer_email && o.customer_notified_status !== "received") {
+      const inner = "<p>Hola " + esc(o.customer_name) + ", hemos recibido tu pedido y está pendiente de preparación. Te avisaremos por email cuando cambie su estado.</p>" + rows([["Pedido", "<strong>" + esc(o.order_number) + "</strong>"], ["Recogida", "hoy a las <strong>" + esc(time) + "</strong>"], ["Total", eur(o.total)]]);
+      await send(o.customer_email, "Hemos recibido tu pedido " + o.order_number + " · Secret Spot", layout("¡Pedido recibido!", inner));
+      const { error: customerUpdateError } = await db.from("orders").update({ customer_notified_status: "received" }).eq("id", id);
+      if (customerUpdateError) throw customerUpdateError;
+    }
   }
 }
 
@@ -341,7 +369,7 @@ Deno.serve(async (req) => {
 
     if (
       typeof id !== "string" ||
-      !["booking", "booking_status", "message", "order"].includes(type)
+      !["booking", "booking_status", "message", "order", "order_status"].includes(type)
     ) {
       return new Response(
         JSON.stringify({ error: "bad_request" }),
