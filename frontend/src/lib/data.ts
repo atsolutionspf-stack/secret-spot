@@ -48,9 +48,10 @@ function withTimeout<T>(promise: PromiseLike<T>, ms: number, code: string): Prom
 
 export const errorCode = (e: unknown): string => (e instanceof DataError ? e.code : "generic");
 
-/** Fire-and-forget email notification (Supabase Edge Function "notify"). Never blocks the UI. */
-export function notify(type: "booking" | "booking_status" | "message" | "order", id: string): void {
-  supabase.functions.invoke("notify", { body: { type, id } }).catch(() => undefined);
+/** Invoke the Supabase Edge Function that sends email notifications. */
+export async function notify(type: "booking" | "booking_status" | "message" | "order", id: string): Promise<void> {
+  const { error } = await supabase.functions.invoke("notify", { body: { type, id } });
+  if (error) throw new DataError(error.message || "notification_failed");
 }
 
 // ---------- Public ----------
@@ -75,13 +76,13 @@ export async function createBooking(body: BookingCreate): Promise<Booking> {
     throw new DataError("invalid_booking_response");
   }
 
-  notify("booking", b.id);
+  void notify("booking", b.id).catch((error) => console.error("Booking email notification failed", error));
   return b;
 }
 
 export async function createMessage(body: MessageCreate): Promise<{ id: string }> {
   const m = check<{ id: string }>(await supabase.rpc("create_message", { p: body }));
-  notify("message", m.id);
+  void notify("message", m.id).catch((error) => console.error("Message email notification failed", error));
   return m;
 }
 
@@ -112,26 +113,62 @@ export async function fetchStats(today: string): Promise<AdminStats> {
   };
   const head = { count: "exact" as const, head: true };
   const [pending, upcoming, unread, items] = await Promise.all([
-    count(supabase.from("bookings").select("id", head).eq("status", "pending")),
-    count(supabase.from("bookings").select("id", head).gte("date", today).in("status", ["pending", "confirmed"])),
+    count(supabase.from("reservations").select("id", head).eq("status", "pending")),
+    count(supabase.from("reservations").select("id", head).gte("reservation_date", today).in("status", ["pending", "confirmed"])),
     count(supabase.from("messages").select("id", head).eq("read", false)),
     count(supabase.from("menu_items").select("id", head)),
   ]);
   return { pending_bookings: pending, upcoming_bookings: upcoming, unread_messages: unread, menu_items: items };
 }
 
-const BOOKING_COLS = "id,code,name,phone,email,date,time,party_size,note,lang,status,created_at";
+type ReservationRow = {
+  id: string;
+  code: string | null;
+  customer_name: string;
+  customer_phone: string;
+  email: string | null;
+  reservation_date: string;
+  reservation_time: string;
+  party_size: number;
+  notes: string | null;
+  lang: "es" | "en";
+  status: BookingStatus;
+  created_at: string;
+};
+
+const RESERVATION_COLS = "id,code,customer_name,customer_phone,email,reservation_date,reservation_time,party_size,notes,lang,status,created_at";
+
+function toBooking(row: ReservationRow): Booking {
+  return {
+    id: row.id,
+    code: row.code ?? "",
+    name: row.customer_name,
+    phone: row.customer_phone,
+    email: row.email ?? "",
+    date: row.reservation_date,
+    time: String(row.reservation_time).slice(0, 5),
+    party_size: row.party_size,
+    note: row.notes ?? "",
+    lang: row.lang === "en" ? "en" : "es",
+    status: row.status,
+    created_at: row.created_at,
+  };
+}
 
 export async function listBookings(status: string): Promise<Booking[]> {
-  let q = supabase.from("bookings").select(BOOKING_COLS).order("date").order("time");
+  let q = supabase.from("reservations").select(RESERVATION_COLS).order("reservation_date").order("reservation_time");
   if (status !== "all") q = q.eq("status", status);
-  return check<Booking[]>(await q);
+  return check<ReservationRow[]>(await q).map(toBooking);
 }
 
 export async function updateBookingStatus(id: string, status: BookingStatus): Promise<Booking> {
-  const b = check<Booking>(await supabase.from("bookings").update({ status }).eq("id", id).select(BOOKING_COLS).single());
-  if (status === "confirmed" || status === "cancelled") notify("booking_status", id);
-  return b;
+  const row = check<ReservationRow>(
+    await supabase.from("reservations").update({ status }).eq("id", id).select(RESERVATION_COLS).single()
+  );
+  if (status === "confirmed" || status === "cancelled") {
+    await notify("booking_status", id);
+  }
+  return toBooking(row);
 }
 
 export async function listMessages(): Promise<Message[]> {
