@@ -147,7 +147,7 @@ end;
 $$;
 
 -- Only the backend (service_role) may call it; never anon/authenticated browsers.
-revoke all on function public.create_pickup_order(uuid, text, text, text, text, jsonb, numeric)
+revoke all on function public.create_pickup_order(uuid, text, text, text, text, text, jsonb, numeric)
   from public, anon, authenticated;
 grant execute on function public.create_pickup_order(uuid, text, text, text, text, jsonb, numeric)
   to service_role;
@@ -247,6 +247,7 @@ grant execute on function public.create_pickup_order(uuid, text, text, text, tex
       on m.id = (e->>'menu_item_id')::uuid and m.restaurant_id = p_restaurant_id;
 
   return jsonb_build_object(
+    'id', v_order_id,
     'order_number', v_number,
     'status', 'pending',
     'pickup_time', p_pickup_time,
