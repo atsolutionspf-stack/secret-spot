@@ -27,10 +27,11 @@ const STEPS: Exclude<Step, "done">[] = ["menu", "cart", "details", "summary"];
 interface Details {
   customer_name: string;
   customer_phone: string;
+  customer_email: string;
   pickup_time: string;
   notes: string;
 }
-const EMPTY_DETAILS: Details = { customer_name: "", customer_phone: "", pickup_time: "", notes: "" };
+const EMPTY_DETAILS: Details = { customer_name: "", customer_phone: "", customer_email: "", pickup_time: "", notes: "" };
 
 const field =
   "h-12 rounded-xl border-white/10 bg-[#141923] text-base text-white placeholder:text-stone-500 focus-visible:border-amber-500/60 focus-visible:ring-amber-500/30";
@@ -187,6 +188,10 @@ function DetailsStep({ details, setDetails, config }: { details: Details; setDet
         <Input id="o-phone" type="tel" data-testid="order-phone-input" autoComplete="tel" maxLength={25} className={field} value={details.customer_phone} onChange={(e) => set("customer_phone", e.target.value)} />
       </div>
       <div className="space-y-2">
+        <Label htmlFor="o-email" className="text-stone-300">{t.order.email} *</Label>
+        <Input id="o-email" type="email" data-testid="order-email-input" autoComplete="email" maxLength={254} className={field} value={details.customer_email} onChange={(e) => set("customer_email", e.target.value)} />
+      </div>
+      <div className="space-y-2">
         <Label className="text-stone-300">{t.order.pickupTime} *</Label>
         <Select value={details.pickup_time} onValueChange={(v: string) => set("pickup_time", v)} disabled={slots.length === 0}>
           <SelectTrigger data-testid="order-pickup-select" className={cn(field, "w-full")}>
@@ -217,6 +222,7 @@ function SummaryStep({ priced, details }: { priced: PricedCart; details: Details
   const info = [
     { k: "pickup", label: t.order.pickupAt, v: t.order.todayAt.replace("{time}", details.pickup_time) },
     { k: "customer", label: t.order.customer, v: `${details.customer_name.trim()} · ${details.customer_phone.trim()}` },
+    { k: "email", label: t.order.email, v: details.customer_email.trim() },
     { k: "where", label: t.order.where, v: `Secret Spot · ${SITE.addressLine1}` },
     { k: "payment", label: t.order.payment, v: t.order.paymentValue },
   ];
@@ -369,6 +375,7 @@ export default function OrderSheet() {
   const detailsValid =
     details.customer_name.trim().length >= 2 &&
     details.customer_phone.trim().length >= 6 &&
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(details.customer_email.trim()) &&
     !!config?.pickup_slots.includes(details.pickup_time);
 
   const onOpenChange = (o: boolean) => {
@@ -383,6 +390,7 @@ export default function OrderSheet() {
     submit.mutate({
       customer_name: details.customer_name.trim(),
       customer_phone: details.customer_phone.trim(),
+      customer_email: details.customer_email.trim().toLowerCase(),
       notes: details.notes.trim(),
       pickup_time: details.pickup_time,
       items: priced.rows.map((r) => ({ menu_item_id: r.item.id, quantity: r.quantity })),

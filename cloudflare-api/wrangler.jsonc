@@ -1,3 +1,5 @@
+// Cloudflare Workers Builds Preview uses: uv run pywrangler deploy
+// Keep this Python Worker configuration aligned across production and previews.
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "secret-spot-api",
