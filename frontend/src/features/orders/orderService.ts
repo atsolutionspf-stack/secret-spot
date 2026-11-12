@@ -21,6 +21,7 @@ export const orderKeys = {
 };
 
 interface CreatedOrderResponse {
+  id: string;
   order_number: string;
   status: string;
   pickup_time: string;
@@ -54,7 +55,7 @@ export async function submitOrder(
   );
 
   const order: Order = {
-    id: saved.order_number,
+    id: saved.id,
     order_number: saved.order_number,
     customer_name: body.customer_name,
     customer_phone: body.customer_phone,
