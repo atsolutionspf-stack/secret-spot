@@ -37,7 +37,12 @@ export default function BookingsPanel() {
       queryClient.invalidateQueries({ queryKey: ["admin", "bookings"] });
       queryClient.invalidateQueries({ queryKey: ["admin", "stats"] });
     },
-    onError: () => toast.error(t.admin.error),
+    onError: () => {
+      // The reservation status may already be saved even if the follow-up email fails.
+      queryClient.invalidateQueries({ queryKey: ["admin", "bookings"] });
+      queryClient.invalidateQueries({ queryKey: ["admin", "stats"] });
+      toast.error(t.admin.error);
+    },
   });
 
   const rows = q.data && !q.isError ? q.data : [];
