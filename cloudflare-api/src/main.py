@@ -192,6 +192,7 @@ class OrderIn(BaseModel):
 
     customer_name: Annotated[str, Field(min_length=2, max_length=80)]
     customer_phone: Annotated[str, Field(min_length=6, max_length=20)]
+    customer_email: Annotated[str, Field(min_length=5, max_length=254)]
     notes: Optional[Annotated[str, Field(max_length=500)]] = None
     pickup_time: Annotated[str, Field(min_length=4, max_length=40)]
     items: Annotated[list[OrderLineIn], Field(min_length=1, max_length=MAX_LINES)]
@@ -202,6 +203,14 @@ class OrderIn(BaseModel):
         if v is not None and CONTROL_RE.search(v):
             raise ValueError("caracteres no permitidos")
         return v
+
+    @field_validator("customer_email")
+    @classmethod
+    def valid_email(cls, v: str):
+        value = v.strip().lower()
+        if not re.fullmatch(r"[^\\s@]+@[^\\s@]+\\.[^\\s@]+", value):
+            raise ValueError("email no válido")
+        return value
 
     @field_validator("customer_phone")
     @classmethod
@@ -221,6 +230,7 @@ class OrderIn(BaseModel):
 
 
 class OrderCreated(BaseModel):
+    id: UUID
     order_number: str
     status: str
     pickup_time: str
@@ -300,6 +310,7 @@ async def create_order(request: Request):
                 "p_restaurant_id": restaurant_id,
                 "p_customer_name": order.customer_name,
                 "p_customer_phone": order.customer_phone,
+                "p_customer_email": order.customer_email,
                 "p_notes": order.notes or None,
                 "p_pickup_time": order.pickup_time,
                 "p_items": [
@@ -327,7 +338,21 @@ async def create_order(request: Request):
     if not isinstance(saved, dict) or not saved.get("order_number"):
         raise api_error(503, "order_save_failed", "No se pudo guardar el pedido. Inténtalo de nuevo.")
 
+    # Email notifications run independently: a mail-provider outage must not lose a saved order.
+    try:
+        env = request.scope["env"]
+        key = env.SUPABASE_SECRET_KEY
+        await fetch(
+            f"{env.SUPABASE_URL.rstrip('/')}/functions/v1/notify",
+            method="POST",
+            headers={"apikey": key, "Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+            body=json.dumps({"type": "order", "id": str(saved["id"])}),
+        )
+    except Exception as exc:
+        print(f"order notification trigger failed: {type(exc).__name__}")
+
     return OrderCreated(
+        id=saved["id"],
         order_number=saved["order_number"],
         status=saved["status"],
         pickup_time=str(saved["pickup_time"]),
