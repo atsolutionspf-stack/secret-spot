@@ -14,7 +14,10 @@ app = FastAPI(title="Secret Spot API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://secret-spot.pages.dev"],
+    allow_origins=[
+        "https://secret-spot.pages.dev",
+        "https://email-required-order-notific.secret-spot.pages.dev",
+    ],
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["Content-Type"],
 )
