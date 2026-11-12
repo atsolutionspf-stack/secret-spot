@@ -208,7 +208,7 @@ class OrderIn(BaseModel):
     @classmethod
     def valid_email(cls, v: str):
         value = v.strip().lower()
-        if not re.fullmatch(r"[^\\s@]+@[^\\s@]+\\.[^\\s@]+", value):
+        if not re.fullmatch(r"[^\s@]+@[^\s@]+\.[^\s@]+", value):
             raise ValueError("email no válido")
         return value
 
