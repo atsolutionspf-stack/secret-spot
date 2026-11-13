@@ -17,7 +17,7 @@ app.add_middleware(
     # Production domain plus Cloudflare Pages preview/deployment URLs for this site.
     # Keep the pattern restricted to secret-spot.pages.dev; do not allow arbitrary origins.
     allow_origins=["https://secret-spot.pages.dev"],
-    allow_origin_regex=r"https://([a-z0-9-]+\\.)?secret-spot\\.pages\\.dev",
+    allow_origin_regex=r"https://([a-z0-9-]+\.)?secret-spot\.pages\.dev",
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["Content-Type"],
 )
