@@ -223,7 +223,9 @@ export async function updateOrderStatus(id: string, status: AdminOrderStatus): P
       .single(),
   );
   if (status === "preparing" || status === "cancelled") {
-    await notify("order_status", id);
+    // Email delivery must not turn a successfully saved status change into an admin error.
+    // Resend may reject guest recipients until the sender domain is verified.
+    void notify("order_status", id).catch((error) => console.error("Order status email notification failed", error));
   }
 }
 
