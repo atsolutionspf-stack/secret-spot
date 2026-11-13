@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Check, Clock3, MessageSquareText, Phone, X } from "lucide-react";
+import { Check, Clock3, Mail, MessageSquareText, Phone, X } from "lucide-react";
 import { toast } from "sonner";
 import { listOrders, updateOrderStatus, type AdminOrder, type AdminOrderStatus } from "@/lib/data";
 import { useI18n } from "@/lib/i18n";
@@ -78,6 +78,7 @@ export default function OrdersPanel() {
                 <p className="font-mono text-lg font-bold text-amber-400">{o.order_number}</p>
                 <p className="mt-1 font-semibold text-white">{o.customer_name}</p>
                 <a href={`tel:${o.customer_phone}`} className="mt-1 inline-flex items-center gap-1 text-sm text-stone-400 hover:text-amber-400"><Phone className="size-3.5" />{o.customer_phone}</a>
+                <a href={`mailto:${o.customer_email}`} className="mt-1 flex items-center gap-1 break-all text-sm text-stone-400 hover:text-amber-400"><Mail className="size-3.5 shrink-0" />{o.customer_email}</a>
               </div>
               <div className="flex flex-col items-end gap-2">
                 <span data-testid="admin-order-status" className={cn("rounded-full border px-2.5 py-1 text-xs font-semibold uppercase", STATUS_STYLE[o.status])}>{labels[o.status]}</span>
