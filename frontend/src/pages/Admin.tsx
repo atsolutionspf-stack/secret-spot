@@ -28,7 +28,7 @@ function Dashboard() {
   const { t } = useI18n();
   const [tab, setTab] = useState<TabKey>("orders");
   const { today } = useHours();
-  const stats = useQuery({ queryKey: ["admin", "stats"], queryFn: () => fetchStats(today) });
+  const stats = useQuery({ queryKey: ["admin", "stats"], queryFn: () => fetchStats(today), refetchInterval: 30_000 });
   const s = stats.data && !stats.isError ? stats.data : null;
   const cards = [
     { k: "pendingOrders", label: t.admin.stats.pendingOrders, v: s?.pending_orders, accent: "text-amber-400" },
