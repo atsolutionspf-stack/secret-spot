@@ -14,8 +14,7 @@ import type {
   Message,
   MessageCreate,
 } from "./types";
-import type { OrderStatus } from "@/features/orders/types";
-import type { OrderConfig } from "@/features/orders/types";
+import type { OrderConfig, OrderStatus } from "@/features/orders/types";
 
 const RESTAURANT_ID = "71691b13-c118-4c6e-a554-b50d76de0924";
 
