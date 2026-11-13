@@ -21,6 +21,7 @@ export const orderKeys = {
 };
 
 interface CreatedOrderResponse {
+  id: string;
   order_number: string;
   status: string;
   pickup_time: string;
@@ -46,6 +47,8 @@ export async function submitOrder(
     body,
   );
 
+  const { notify } = await import("@/lib/data");
+  void notify("order", saved.id).catch((error) => console.error("Order email notification failed", error));
   const now = new Date().toISOString();
 
   const subtotalCents = rows.reduce(
@@ -58,6 +61,7 @@ export async function submitOrder(
     order_number: saved.order_number,
     customer_name: body.customer_name,
     customer_phone: body.customer_phone,
+    customer_email: body.customer_email,
     notes: body.notes,
     pickup_at: now,
     pickup_time: saved.pickup_time,
