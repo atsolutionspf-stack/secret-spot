@@ -374,7 +374,7 @@ export default function OrderSheet() {
   const detailsValid =
     details.customer_name.trim().length >= 2 &&
     details.customer_phone.trim().length >= 6 &&
-    /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(details.customer_email.trim()) &&
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(details.customer_email.trim()) &&
     !!config?.pickup_slots.includes(details.pickup_time);
 
   const onOpenChange = (o: boolean) => {
