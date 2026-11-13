@@ -14,7 +14,10 @@ import type {
   Message,
   MessageCreate,
 } from "./types";
+import type { OrderStatus } from "@/features/orders/types";
 import type { OrderConfig } from "@/features/orders/types";
+
+const RESTAURANT_ID = "71691b13-c118-4c6e-a554-b50d76de0924";
 
 export class DataError extends Error {
   code: string;
@@ -112,13 +115,14 @@ export async function fetchStats(today: string): Promise<AdminStats> {
     return r.count ?? 0;
   };
   const head = { count: "exact" as const, head: true };
-  const [pending, upcoming, unread, items] = await Promise.all([
-    count(supabase.from("reservations").select("id", head).eq("status", "pending")),
-    count(supabase.from("reservations").select("id", head).gte("reservation_date", today).in("status", ["pending", "confirmed"])),
+  const [pending, upcoming, unread, items, pendingOrders] = await Promise.all([
+    count(supabase.from("reservations").select("id", head).eq("restaurant_id", RESTAURANT_ID).eq("status", "pending")),
+    count(supabase.from("reservations").select("id", head).eq("restaurant_id", RESTAURANT_ID).gte("reservation_date", today).in("status", ["pending", "confirmed"])),
     count(supabase.from("messages").select("id", head).eq("read", false)),
     count(supabase.from("menu_items").select("id", head)),
+    count(supabase.from("orders").select("id", head).eq("restaurant_id", RESTAURANT_ID).eq("status", "pending")),
   ]);
-  return { pending_bookings: pending, upcoming_bookings: upcoming, unread_messages: unread, menu_items: items };
+  return { pending_bookings: pending, upcoming_bookings: upcoming, unread_messages: unread, menu_items: items, pending_orders: pendingOrders };
 }
 
 type ReservationRow = {
@@ -156,19 +160,68 @@ function toBooking(row: ReservationRow): Booking {
 }
 
 export async function listBookings(status: string): Promise<Booking[]> {
-  let q = supabase.from("reservations").select(RESERVATION_COLS).order("reservation_date").order("reservation_time");
+  let q = supabase.from("reservations").select(RESERVATION_COLS).eq("restaurant_id", RESTAURANT_ID).order("reservation_date").order("reservation_time");
   if (status !== "all") q = q.eq("status", status);
   return check<ReservationRow[]>(await q).map(toBooking);
 }
 
 export async function updateBookingStatus(id: string, status: BookingStatus): Promise<Booking> {
   const row = check<ReservationRow>(
-    await supabase.from("reservations").update({ status }).eq("id", id).select(RESERVATION_COLS).single()
+    await supabase.from("reservations").update({ status }).eq("restaurant_id", RESTAURANT_ID).eq("id", id).select(RESERVATION_COLS).single()
   );
   if (status === "confirmed" || status === "cancelled") {
     await notify("booking_status", id);
   }
   return toBooking(row);
+}
+
+
+export type AdminOrderStatus = OrderStatus;
+export interface AdminOrderItem {
+  id: string;
+  name: string;
+  unit_price: number;
+  quantity: number;
+  line_total: number;
+}
+export interface AdminOrder {
+  id: string;
+  order_number: string;
+  customer_name: string;
+  customer_phone: string;
+  notes: string | null;
+  pickup_at: string;
+  pickup_time: string | null;
+  subtotal: number;
+  total: number;
+  currency: string;
+  status: AdminOrderStatus;
+  created_at: string;
+  order_items: AdminOrderItem[];
+}
+
+const ORDER_ADMIN_COLS = "id,order_number,customer_name,customer_phone,notes,pickup_at,pickup_time,subtotal,total,currency,status,created_at,order_items(id,name,unit_price,quantity,line_total)";
+
+export async function listOrders(): Promise<AdminOrder[]> {
+  return check<AdminOrder[]>(
+    await supabase.from("orders").select(ORDER_ADMIN_COLS)
+      .eq("restaurant_id", RESTAURANT_ID)
+      .order("created_at", { ascending: false }),
+  );
+}
+
+export async function updateOrderStatus(id: string, status: AdminOrderStatus): Promise<void> {
+  const patch = status === "preparing"
+    ? { status, confirmed_at: new Date().toISOString() }
+    : { status };
+  check(
+    await supabase.from("orders").update(patch)
+      .eq("restaurant_id", RESTAURANT_ID)
+      .eq("id", id)
+      .eq("status", "pending")
+      .select("id")
+      .single(),
+  );
 }
 
 export async function listMessages(): Promise<Message[]> {
