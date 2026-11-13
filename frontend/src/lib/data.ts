@@ -51,7 +51,7 @@ function withTimeout<T>(promise: PromiseLike<T>, ms: number, code: string): Prom
 export const errorCode = (e: unknown): string => (e instanceof DataError ? e.code : "generic");
 
 /** Invoke the Supabase Edge Function that sends email notifications. */
-export async function notify(type: "booking" | "booking_status" | "message" | "order", id: string): Promise<void> {
+export async function notify(type: "booking" | "booking_status" | "message" | "order" | "order_status", id: string): Promise<void> {
   const { error } = await supabase.functions.invoke("notify", { body: { type, id } });
   if (error) throw new DataError(error.message || "notification_failed");
 }
@@ -188,6 +188,7 @@ export interface AdminOrder {
   order_number: string;
   customer_name: string;
   customer_phone: string;
+  customer_email: string;
   notes: string | null;
   pickup_at: string;
   pickup_time: string | null;
@@ -199,7 +200,7 @@ export interface AdminOrder {
   order_items: AdminOrderItem[];
 }
 
-const ORDER_ADMIN_COLS = "id,order_number,customer_name,customer_phone,notes,pickup_at,pickup_time,subtotal,total,currency,status,created_at,order_items(id,name,unit_price,quantity,line_total)";
+const ORDER_ADMIN_COLS = "id,order_number,customer_name,customer_phone,customer_email,notes,pickup_at,pickup_time,subtotal,total,currency,status,created_at,order_items(id,name,unit_price,quantity,line_total)";
 
 export async function listOrders(): Promise<AdminOrder[]> {
   return check<AdminOrder[]>(
@@ -221,6 +222,9 @@ export async function updateOrderStatus(id: string, status: AdminOrderStatus): P
       .select("id")
       .single(),
   );
+  if (status === "preparing" || status === "cancelled") {
+    await notify("order_status", id);
+  }
 }
 
 export async function listMessages(): Promise<Message[]> {
