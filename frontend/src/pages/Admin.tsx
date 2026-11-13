@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "motion/react";
-import { CalendarClock, ExternalLink, Inbox, LogOut, UtensilsCrossed } from "lucide-react";
+import { CalendarClock, ExternalLink, Inbox, LogOut, ShoppingBag, UtensilsCrossed } from "lucide-react";
 import { fetchStats, isAdmin, signOut } from "@/lib/data";
 import { useHours } from "@/lib/hours";
 import { queryClient } from "@/lib/queryClient";
@@ -14,9 +14,11 @@ import AuthGate from "@/components/admin/AuthGate";
 import BookingsPanel from "@/components/admin/BookingsPanel";
 import MessagesPanel from "@/components/admin/MessagesPanel";
 import MenuPanel from "@/components/admin/MenuPanel";
+import OrdersPanel from "@/components/admin/OrdersPanel";
 
-type TabKey = "bookings" | "messages" | "menu";
+type TabKey = "orders" | "bookings" | "messages" | "menu";
 const TABS: { k: TabKey; Icon: typeof Inbox }[] = [
+  { k: "orders", Icon: ShoppingBag },
   { k: "bookings", Icon: CalendarClock },
   { k: "messages", Icon: Inbox },
   { k: "menu", Icon: UtensilsCrossed },
@@ -29,7 +31,8 @@ function Dashboard() {
   const stats = useQuery({ queryKey: ["admin", "stats"], queryFn: () => fetchStats(today) });
   const s = stats.data && !stats.isError ? stats.data : null;
   const cards = [
-    { k: "pending", label: t.admin.stats.pending, v: s?.pending_bookings, accent: "text-amber-400" },
+    { k: "pendingOrders", label: t.admin.stats.pendingOrders, v: s?.pending_orders, accent: "text-amber-400" },
+    { k: "pending", label: t.admin.stats.pending, v: s?.pending_bookings, accent: "text-amber-300" },
     { k: "upcoming", label: t.admin.stats.upcoming, v: s?.upcoming_bookings, accent: "text-white" },
     { k: "unread", label: t.admin.stats.unread, v: s?.unread_messages, accent: "text-neon-soft" },
     { k: "items", label: t.admin.stats.items, v: s?.menu_items, accent: "text-cyan-400" },
@@ -67,6 +70,7 @@ function Dashboard() {
       </div>
 
       <div className="mt-6">
+        {tab === "orders" && <OrdersPanel />}
         {tab === "bookings" && <BookingsPanel />}
         {tab === "messages" && <MessagesPanel />}
         {tab === "menu" && <MenuPanel />}
