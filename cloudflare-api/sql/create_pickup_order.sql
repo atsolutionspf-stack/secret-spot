@@ -123,7 +123,7 @@ begin
     pickup_at, pickup_time, subtotal, total, currency, fulfillment, payment, status
   ) values (
     p_restaurant_id, v_number, trim(p_customer_name), trim(p_customer_phone),
-    lower(trim(p_customer_email)), nullif(trim(p_notes), ''),
+    lower(trim(p_customer_email)), coalesce(nullif(trim(p_notes), ''), ''),
     v_pickup_at, p_pickup_time, v_subtotal, v_subtotal, 'EUR', 'pickup', 'pay_at_pickup', 'pending'
   )
   returning id into v_order_id;
