@@ -284,88 +284,65 @@ async function handle(type: string, id: string) {
 
   // ORDER STATUS: notify the customer after the restaurant accepts or cancels.
   if (type === "order_status") {
-    const { data: o, error } = await db
-      .from("orders")
-      .select("*")
-      .eq("id", id)
-      .single();
+    const { data: o, error } = await db.from("orders").select("*").eq("id", id).single();
     if (error) throw error;
     if (!o || !o.customer_email) return;
     if (o.status !== "preparing" && o.status !== "cancelled") return;
     if (o.guest_notified_status === o.status) return;
 
     const accepted = o.status === "preparing";
-    const time = new Intl.DateTimeFormat("es-ES", {
-      hour: "2-digit", minute: "2-digit", timeZone: "Europe/Madrid",
-    }).format(new Date(o.pickup_at));
+    const time = new Intl.DateTimeFormat("es-ES", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Madrid" }).format(new Date(o.pickup_at));
     const title = accepted ? "¡Pedido confirmado!" : "Pedido cancelado";
-    const intro = accepted
-      ? "Hemos aceptado tu pedido y ya lo estamos preparando."
-      : "Lamentamos informarte de que no podemos aceptar tu pedido."; 
+    const intro = accepted ? "Hemos aceptado tu pedido y ya lo estamos preparando." : "Lamentamos informarte de que no podemos aceptar tu pedido.";
     const inner =
       `<p style="margin:0 0 8px;font-size:15px;line-height:1.6">Hola ${esc(o.customer_name)}, ${intro}</p>` +
-      rows([
-        ["Pedido", `<strong>${esc(o.order_number)}</strong>`],
-        ["Recogida", esc(time)],
-        ["Total", eur(o.total)],
-      ]) +
-      (accepted
-        ? `<p style="font-size:14px;color:#A8A29E">Te esperamos en Secret Spot. El pago se realiza al recoger.</p>`
-        : `<p style="font-size:14px;color:#A8A29E">Si tienes cualquier duda, llámanos al ${tel(PHONE)}.</p>`);
+      rows([["Pedido", `<strong>${esc(o.order_number)}</strong>`], ["Recogida", esc(time)], ["Total", eur(o.total)]]) +
+      (accepted ? `<p style="font-size:14px;color:#A8A29E">Te esperamos en Secret Spot. El pago se realiza al recoger.</p>` : `<p style="font-size:14px;color:#A8A29E">Si tienes cualquier duda, llámanos al ${tel(PHONE)}.</p>`);
     await send(o.customer_email, `${title} · Secret Spot`, layout(title, inner));
-    const { error: updateError } = await db
-      .from("orders")
-      .update({ guest_notified_status: o.status })
-      .eq("id", id);
+    const { error: updateError } = await db.from("orders").update({ guest_notified_status: o.status }).eq("id", id);
     if (updateError) throw updateError;
     return;
   }
-  // ORDERS
+
+  // NEW ORDER: notify owner and customer independently, tracking only successful sends.
   if (type === "order") {
-    const { data: o } = await db
-      .from("orders")
-      .select("*, order_items(*)")
-      .eq("id", id)
-      .single();
+    const { data: o, error } = await db.from("orders").select("*, order_items(*)").eq("id", id).single();
+    if (error) throw error;
+    if (!o) return;
 
-    if (!o || o.owner_notified) return;
-
-    await db.from("orders").update({ owner_notified: true }).eq("id", id);
-
-    const time = new Intl.DateTimeFormat("es-ES", {
-      hour: "2-digit",
-      minute: "2-digit",
-      timeZone: "Europe/Madrid",
-    }).format(new Date(o.pickup_at));
-
+    const time = new Intl.DateTimeFormat("es-ES", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Madrid" }).format(new Date(o.pickup_at));
     // deno-lint-ignore no-explicit-any
-    const items = (o.order_items ?? [])
-      .sort((a: any, b: any) => a.position - b.position)
-      // deno-lint-ignore no-explicit-any
-      .map((l: any) =>
-        `<tr><td style="padding:4px 0;color:#fff;font-size:14px">${l.quantity} × ${esc(l.name)}</td><td style="padding:4px 0;color:#F59E0B;text-align:right">${eur(l.line_total)}</td></tr>`
-      )
-      .join("");
-
+    const orderLines = (o.order_items ?? []).sort((a: any, b: any) => a.position - b.position).map((l: any) =>
+      `<tr><td style="padding:4px 0;color:#fff;font-size:14px">${l.quantity} × ${esc(l.name)}</td><td style="padding:4px 0;color:#F59E0B;text-align:right">${eur(l.line_total)}</td></tr>`
+    ).join("");
     const r: [string, string][] = [
       ["Pedido", `<strong>${esc(o.order_number)}</strong>`],
       ["Recogida", `hoy a las <strong>${esc(time)}</strong>`],
       ["Cliente", esc(o.customer_name)],
       ["Teléfono", tel(o.customer_phone)],
+      ["Email", mail(o.customer_email)],
     ];
-
     if (o.notes) r.push(["Observaciones", esc(o.notes)]);
-
-    await send(
-      OWNER,
-      `Nuevo pedido para recoger ${o.order_number} · ${time} · ${eur(o.total)}`,
-      layout(
-        "Nuevo pedido para recoger",
-        `<p style="margin:0 0 8px;font-size:15px">Nuevo pedido <strong>para recoger en el local</strong> (pago al recoger).</p>${rows(r)}
-<table width="100%" style="background:#0B0E14;border-radius:12px;padding:12px 16px;margin:0 0 20px">${items}
-<tr><td style="padding-top:10px;border-top:1px solid #232B3B;color:#fff;font-weight:bold">Total</td><td style="padding-top:10px;border-top:1px solid #232B3B;color:#F59E0B;font-weight:bold;text-align:right">${eur(o.total)}</td></tr></table>`,
-      ),
-    );
+    const itemsHtml = `<table width="100%" style="background:#0B0E14;border-radius:12px;padding:12px 16px;margin:0 0 20px">${orderLines}<tr><td style="padding-top:10px;border-top:1px solid #232B3B;color:#fff;font-weight:bold">Total</td><td style="padding-top:10px;border-top:1px solid #232B3B;color:#F59E0B;font-weight:bold;text-align:right">${eur(o.total)}</td></tr></table>`;
+    const ownerHtml = layout("Nuevo pedido para recoger", `<p style="margin:0 0 8px;font-size:15px">Nuevo pedido <strong>para recoger en el local</strong> (pago al recoger).</p>${rows(r)}${itemsHtml}${button(`${SITE}/admin`, "Abrir el panel")}`);
+    const guestHtml = layout("¡Hemos recibido tu pedido!", `<p style="margin:0 0 8px;font-size:15px;line-height:1.6">Hola ${esc(o.customer_name)}, hemos recibido tu pedido y está <strong style="color:#F59E0B">pendiente de confirmación</strong>. Te avisaremos cuando el restaurante lo acepte.</p>${rows([["Pedido", `<strong>${esc(o.order_number)}</strong>`], ["Recogida", esc(time)], ["Total", eur(o.total)]])}${itemsHtml}<p style="font-size:14px;color:#A8A29E">El pago se realiza al recoger en Secret Spot.</p>`);
+    const notificationErrors: string[] = [];
+    if (!o.owner_notified && OWNER) {
+      try {
+        await send(OWNER, `Nuevo pedido para recoger ${o.order_number} · ${time} · ${eur(o.total)}`, ownerHtml);
+        const { error: ownerUpdateError } = await db.from("orders").update({ owner_notified: true }).eq("id", id);
+        if (ownerUpdateError) throw ownerUpdateError;
+      } catch (error) { console.error("order owner notification failed", error); notificationErrors.push("owner"); }
+    }
+    if (o.customer_email && o.guest_notified_status !== "received") {
+      try {
+        await send(o.customer_email, "Hemos recibido tu pedido · Secret Spot", guestHtml);
+        const { error: guestUpdateError } = await db.from("orders").update({ guest_notified_status: "received" }).eq("id", id);
+        if (guestUpdateError) throw guestUpdateError;
+      } catch (error) { console.error("order guest notification failed", error); notificationErrors.push("guest"); }
+    }
+    if (notificationErrors.length) throw new Error(`order notification failed: ${notificationErrors.join(", ")}`);
+    return;
   }
 }
 
