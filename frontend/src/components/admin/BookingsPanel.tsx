@@ -17,8 +17,11 @@ export const STATUS_STYLE: Record<BookingStatus, string> = {
   completed: "border-cyan-500/30 bg-cyan-500/10 text-cyan-400",
 };
 
-const ACTIONS: { status: BookingStatus; key: "confirm" | "cancel" | "complete"; cls: string }[] = [
+const ACTIONS: { status: BookingStatus; key: "confirm" | "reject" | "cancel" | "complete"; cls: string }[] = [
   { status: "confirmed", key: "confirm", cls: "bg-emerald-500 text-black hover:bg-emerald-400" },
+  { status: "cancelled", key: "reject", cls: "border border-red-500/40 text-red-300 hover:bg-red-500/10" },
+];
+const CONFIRMED_ACTIONS: typeof ACTIONS = [
   { status: "completed", key: "complete", cls: "border border-cyan-500/40 text-cyan-300 hover:bg-cyan-500/10" },
   { status: "cancelled", key: "cancel", cls: "border border-red-500/40 text-red-300 hover:bg-red-500/10" },
 ];
@@ -29,6 +32,7 @@ export default function BookingsPanel() {
   const q = useQuery({
     queryKey: ["admin", "bookings", filter],
     queryFn: () => listBookings(filter),
+    refetchInterval: 30_000,
   });
   const update = useMutation({
     mutationFn: ({ id, body }: { id: string; body: BookingStatusUpdate }) => updateBookingStatus(id, body.status),
@@ -101,7 +105,7 @@ export default function BookingsPanel() {
                     <p className="mt-2 flex items-start gap-1.5 text-sm text-stone-400"><MessageSquareText className="mt-0.5 size-3.5 shrink-0" /> {b.note}</p>
                   )}
                   <div className="mt-4 flex flex-wrap gap-2">
-                    {ACTIONS.filter((a) => a.status !== b.status).map((a) => (
+                    {(b.status === "pending" ? ACTIONS : b.status === "confirmed" ? CONFIRMED_ACTIONS : []).map((a) => (
                       <button
                         key={a.key}
                         type="button"

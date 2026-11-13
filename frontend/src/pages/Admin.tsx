@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "motion/react";
-import { CalendarClock, ExternalLink, Inbox, LogOut, UtensilsCrossed } from "lucide-react";
+import { CalendarClock, ExternalLink, Inbox, LogOut, ShoppingBag, UtensilsCrossed } from "lucide-react";
 import { fetchStats, isAdmin, signOut } from "@/lib/data";
 import { useHours } from "@/lib/hours";
 import { queryClient } from "@/lib/queryClient";
@@ -14,9 +14,11 @@ import AuthGate from "@/components/admin/AuthGate";
 import BookingsPanel from "@/components/admin/BookingsPanel";
 import MessagesPanel from "@/components/admin/MessagesPanel";
 import MenuPanel from "@/components/admin/MenuPanel";
+import OrdersPanel from "@/components/admin/OrdersPanel";
 
-type TabKey = "bookings" | "messages" | "menu";
+type TabKey = "orders" | "bookings" | "messages" | "menu";
 const TABS: { k: TabKey; Icon: typeof Inbox }[] = [
+  { k: "orders", Icon: ShoppingBag },
   { k: "bookings", Icon: CalendarClock },
   { k: "messages", Icon: Inbox },
   { k: "menu", Icon: UtensilsCrossed },
@@ -24,12 +26,13 @@ const TABS: { k: TabKey; Icon: typeof Inbox }[] = [
 
 function Dashboard() {
   const { t } = useI18n();
-  const [tab, setTab] = useState<TabKey>("bookings");
+  const [tab, setTab] = useState<TabKey>("orders");
   const { today } = useHours();
-  const stats = useQuery({ queryKey: ["admin", "stats"], queryFn: () => fetchStats(today) });
+  const stats = useQuery({ queryKey: ["admin", "stats"], queryFn: () => fetchStats(today), refetchInterval: 30_000 });
   const s = stats.data && !stats.isError ? stats.data : null;
   const cards = [
-    { k: "pending", label: t.admin.stats.pending, v: s?.pending_bookings, accent: "text-amber-400" },
+    { k: "pendingOrders", label: t.admin.stats.pendingOrders, v: s?.pending_orders, accent: "text-amber-400" },
+    { k: "pending", label: t.admin.stats.pending, v: s?.pending_bookings, accent: "text-amber-300" },
     { k: "upcoming", label: t.admin.stats.upcoming, v: s?.upcoming_bookings, accent: "text-white" },
     { k: "unread", label: t.admin.stats.unread, v: s?.unread_messages, accent: "text-neon-soft" },
     { k: "items", label: t.admin.stats.items, v: s?.menu_items, accent: "text-cyan-400" },
@@ -37,7 +40,7 @@ function Dashboard() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 pb-16 pt-6 sm:px-6">
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
         {cards.map((c) => (
           <div key={c.k} data-testid={`admin-stat-${c.k}`} className="rounded-2xl border border-white/[0.07] bg-[#1C2331] p-4">
             <p className="text-xs uppercase tracking-wider text-stone-500">{c.label}</p>
@@ -59,6 +62,9 @@ function Dashboard() {
             {tab === k && <motion.span layoutId="admin-tab-pill" className="absolute inset-0 rounded-full bg-neon" transition={{ type: "spring", stiffness: 420, damping: 34 }} />}
             <Icon className="relative size-4" />
             <span className="relative">{t.admin.tabs[k]}</span>
+            {k === "orders" && !!s?.pending_orders && (
+              <span className="relative rounded-full bg-amber-400 px-1.5 font-mono text-[10px] font-bold text-black">{s.pending_orders}</span>
+            )}
             {k === "messages" && !!s?.unread_messages && (
               <span className="relative rounded-full bg-white px-1.5 font-mono text-[10px] font-bold text-black">{s.unread_messages}</span>
             )}
@@ -67,6 +73,7 @@ function Dashboard() {
       </div>
 
       <div className="mt-6">
+        {tab === "orders" && <OrdersPanel />}
         {tab === "bookings" && <BookingsPanel />}
         {tab === "messages" && <MessagesPanel />}
         {tab === "menu" && <MenuPanel />}
