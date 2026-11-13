@@ -166,6 +166,7 @@ MAX_BODY_BYTES = 16 * 1024
 MAX_LINES = 30
 MAX_QTY_PER_LINE = 20
 PHONE_RE = re.compile(r"^\+?[0-9][0-9 ()\-]{5,19}$")
+EMAIL_RE = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]+$")
 CONTROL_RE = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
 CENT = Decimal("0.01")
 
@@ -195,6 +196,7 @@ class OrderIn(BaseModel):
 
     customer_name: Annotated[str, Field(min_length=2, max_length=80)]
     customer_phone: Annotated[str, Field(min_length=6, max_length=20)]
+    customer_email: Annotated[str, Field(min_length=5, max_length=254)]
     notes: Optional[Annotated[str, Field(max_length=500)]] = None
     pickup_time: Annotated[str, Field(min_length=4, max_length=40)]
     items: Annotated[list[OrderLineIn], Field(min_length=1, max_length=MAX_LINES)]
@@ -205,6 +207,13 @@ class OrderIn(BaseModel):
         if v is not None and CONTROL_RE.search(v):
             raise ValueError("caracteres no permitidos")
         return v
+
+    @field_validator("customer_email")
+    @classmethod
+    def valid_email(cls, v: str):
+        if not EMAIL_RE.match(v):
+            raise ValueError("email no válido")
+        return v.lower()
 
     @field_validator("customer_phone")
     @classmethod
@@ -224,6 +233,7 @@ class OrderIn(BaseModel):
 
 
 class OrderCreated(BaseModel):
+    id: str
     order_number: str
     status: str
     pickup_time: str
@@ -303,6 +313,7 @@ async def create_order(request: Request):
                 "p_restaurant_id": restaurant_id,
                 "p_customer_name": order.customer_name,
                 "p_customer_phone": order.customer_phone,
+                "p_customer_email": order.customer_email,
                 "p_notes": order.notes or None,
                 "p_pickup_time": order.pickup_time,
                 "p_items": [
@@ -331,6 +342,7 @@ async def create_order(request: Request):
         raise api_error(503, "order_save_failed", "No se pudo guardar el pedido. Inténtalo de nuevo.")
 
     return OrderCreated(
+        id=str(saved["id"]),
         order_number=saved["order_number"],
         status=saved["status"],
         pickup_time=str(saved["pickup_time"]),
