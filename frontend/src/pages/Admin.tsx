@@ -26,7 +26,7 @@ const TABS: { k: TabKey; Icon: typeof Inbox }[] = [
 
 function Dashboard() {
   const { t } = useI18n();
-  const [tab, setTab] = useState<TabKey>("bookings");
+  const [tab, setTab] = useState<TabKey>("orders");
   const { today } = useHours();
   const stats = useQuery({ queryKey: ["admin", "stats"], queryFn: () => fetchStats(today) });
   const s = stats.data && !stats.isError ? stats.data : null;
@@ -40,7 +40,7 @@ function Dashboard() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 pb-16 pt-6 sm:px-6">
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
         {cards.map((c) => (
           <div key={c.k} data-testid={`admin-stat-${c.k}`} className="rounded-2xl border border-white/[0.07] bg-[#1C2331] p-4">
             <p className="text-xs uppercase tracking-wider text-stone-500">{c.label}</p>
@@ -62,6 +62,9 @@ function Dashboard() {
             {tab === k && <motion.span layoutId="admin-tab-pill" className="absolute inset-0 rounded-full bg-neon" transition={{ type: "spring", stiffness: 420, damping: 34 }} />}
             <Icon className="relative size-4" />
             <span className="relative">{t.admin.tabs[k]}</span>
+            {k === "orders" && !!s?.pending_orders && (
+              <span className="relative rounded-full bg-amber-400 px-1.5 font-mono text-[10px] font-bold text-black">{s.pending_orders}</span>
+            )}
             {k === "messages" && !!s?.unread_messages && (
               <span className="relative rounded-full bg-white px-1.5 font-mono text-[10px] font-bold text-black">{s.unread_messages}</span>
             )}
