@@ -189,7 +189,7 @@ function DetailsStep({ details, setDetails, config }: { details: Details; setDet
       </div>
       <div className="space-y-2">
         <Label htmlFor="o-email" className="text-stone-300">Email *</Label>
-        <Input id="o-email" type="email" data-testid="order-email-input" autoComplete="email" maxLength={254} className={field} value={details.customer_email} onChange={(e) => set("customer_email", e.target.value)} />
+        <Input id="o-email" type="email" required data-testid="order-email-input" autoComplete="email" maxLength={254} className={field} value={details.customer_email} onChange={(e) => set("customer_email", e.target.value)} />
       </div>
       <div className="space-y-2">
         <Label className="text-stone-300">{t.order.pickupTime} *</Label>
