@@ -75,6 +75,7 @@ export interface AdminStats {
   upcoming_bookings: number;
   unread_messages: number;
   menu_items: number;
+  pending_orders: number;
 }
 
 export const CATEGORIES: Category[] = ["burgers", "alitas", "poke", "sides", "sweets"];
