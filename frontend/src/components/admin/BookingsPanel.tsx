@@ -32,6 +32,7 @@ export default function BookingsPanel() {
   const q = useQuery({
     queryKey: ["admin", "bookings", filter],
     queryFn: () => listBookings(filter),
+    refetchInterval: 30_000,
   });
   const update = useMutation({
     mutationFn: ({ id, body }: { id: string; body: BookingStatusUpdate }) => updateBookingStatus(id, body.status),
