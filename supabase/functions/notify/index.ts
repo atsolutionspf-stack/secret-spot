@@ -282,6 +282,44 @@ async function handle(type: string, id: string) {
     return;
   }
 
+  // ORDER STATUS: notify the customer after the restaurant accepts or cancels.
+  if (type === "order_status") {
+    const { data: o, error } = await db
+      .from("orders")
+      .select("*")
+      .eq("id", id)
+      .single();
+    if (error) throw error;
+    if (!o || !o.customer_email) return;
+    if (o.status !== "preparing" && o.status !== "cancelled") return;
+    if (o.guest_notified_status === o.status) return;
+
+    const accepted = o.status === "preparing";
+    const time = new Intl.DateTimeFormat("es-ES", {
+      hour: "2-digit", minute: "2-digit", timeZone: "Europe/Madrid",
+    }).format(new Date(o.pickup_at));
+    const title = accepted ? "¡Pedido confirmado!" : "Pedido cancelado";
+    const intro = accepted
+      ? "Hemos aceptado tu pedido y ya lo estamos preparando."
+      : "Lamentamos informarte de que no podemos aceptar tu pedido."; 
+    const inner =
+      `<p style="margin:0 0 8px;font-size:15px;line-height:1.6">Hola ${esc(o.customer_name)}, ${intro}</p>` +
+      rows([
+        ["Pedido", `<strong>${esc(o.order_number)}</strong>`],
+        ["Recogida", esc(time)],
+        ["Total", eur(o.total)],
+      ]) +
+      (accepted
+        ? `<p style="font-size:14px;color:#A8A29E">Te esperamos en Secret Spot. El pago se realiza al recoger.</p>`
+        : `<p style="font-size:14px;color:#A8A29E">Si tienes cualquier duda, llámanos al ${tel(PHONE)}.</p>`);
+    await send(o.customer_email, `${title} · Secret Spot`, layout(title, inner));
+    const { error: updateError } = await db
+      .from("orders")
+      .update({ guest_notified_status: o.status })
+      .eq("id", id);
+    if (updateError) throw updateError;
+    return;
+  }
   // ORDERS
   if (type === "order") {
     const { data: o } = await db
@@ -341,7 +379,7 @@ Deno.serve(async (req) => {
 
     if (
       typeof id !== "string" ||
-      !["booking", "booking_status", "message", "order"].includes(type)
+      !["booking", "booking_status", "message", "order", "order_status"].includes(type)
     ) {
       return new Response(
         JSON.stringify({ error: "bad_request" }),
