@@ -343,7 +343,7 @@ async function handle(type: string, id: string) {
     const inner =
       `<p style="margin:0 0 8px;font-size:15px;line-height:1.6">Hola ${esc(o.customer_name)}, ${intro}</p>` +
       rows([["Pedido", `<strong>${esc(o.order_number)}</strong>`], ["Recogida", esc(time)], ["Total", eur(o.total)]]) +
-      (accepted ? `<p style="font-size:14px;color:#A8A29E">Te esperamos en Secret Spot. El pago se realiza al recoger.</p>` : `<p style="font-size:14px;color:#A8A29E">Si tienes cualquier duda, llámanos al ${tel(PHONE)}.</p>`);
+      (accepted || ready ? `<p style="font-size:14px;color:#A8A29E">Te esperamos en Secret Spot. El pago se realiza al recoger.</p>` : `<p style="font-size:14px;color:#A8A29E">Si tienes cualquier duda, llámanos al ${tel(PHONE)}.</p>`);
     await sendOrderEmail(o.customer_email, `${title} · Secret Spot`, layout(title, inner));
     const { error: updateError } = await db.from("orders").update({ guest_notified_status: o.status }).eq("id", id);
     if (updateError) throw updateError;
