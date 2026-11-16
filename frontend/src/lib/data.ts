@@ -211,6 +211,7 @@ export async function listOrders(): Promise<AdminOrder[]> {
 }
 
 export async function updateOrderStatus(id: string, status: AdminOrderStatus): Promise<void> {
+  const expectedCurrentStatus = status === "ready" ? "preparing" : "pending";
   const patch = status === "preparing"
     ? { status, confirmed_at: new Date().toISOString() }
     : { status };
@@ -218,13 +219,12 @@ export async function updateOrderStatus(id: string, status: AdminOrderStatus): P
     await supabase.from("orders").update(patch)
       .eq("restaurant_id", RESTAURANT_ID)
       .eq("id", id)
-      .eq("status", "pending")
+      .eq("status", expectedCurrentStatus)
       .select("id")
       .single(),
   );
-  if (status === "preparing" || status === "cancelled") {
+  if (status === "preparing" || status === "cancelled" || status === "ready") {
     // Email delivery must not turn a successfully saved status change into an admin error.
-    // Resend may reject guest recipients until the sender domain is verified.
     void notify("order_status", id).catch((error) => console.error("Order status email notification failed", error));
   }
 }
