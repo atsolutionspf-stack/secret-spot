@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Check, Clock3, Mail, MessageSquareText, Phone, X } from "lucide-react";
+import { Check, Clock3, Mail, MessageSquareText, Phone, X, PackageCheck } from "lucide-react";
 import { toast } from "sonner";
 import { listOrders, updateOrderStatus, type AdminOrder, type AdminOrderStatus } from "@/lib/data";
 import { useI18n } from "@/lib/i18n";
@@ -103,6 +103,14 @@ export default function OrdersPanel() {
             </div>
 
             {o.notes && <p className="mt-3 flex items-start gap-1.5 text-sm text-stone-400"><MessageSquareText className="mt-0.5 size-3.5 shrink-0" />{o.notes}</p>}
+
+            {o.status === "preparing" && (
+              <div className="mt-4 flex flex-wrap gap-2">
+                <button type="button" data-testid="admin-order-ready-button" disabled={update.isPending} onClick={() => update.mutate({ id: o.id, status: "ready" })} className="inline-flex items-center gap-1.5 rounded-full bg-cyan-400 px-4 py-2 text-xs font-bold uppercase text-black hover:bg-cyan-300 disabled:opacity-50">
+                  <PackageCheck className="size-3.5" />{t.admin.markOrderReady}
+                </button>
+              </div>
+            )}
 
             {o.status === "pending" && (
               <div className="mt-4 flex flex-wrap gap-2">
