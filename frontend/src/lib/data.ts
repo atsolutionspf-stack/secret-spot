@@ -271,3 +271,31 @@ export async function verifyPhoneCode(phone: string, token: string): Promise<voi
 export async function signOut(): Promise<void> {
   await supabase.auth.signOut();
 }
+
+
+export type DayHours = { open: string; close: string };
+export type WeeklyHours = Record<string, DayHours>;
+export interface ScheduleSettings {
+  business_hours: WeeklyHours;
+  reservation_hours: WeeklyHours;
+  order_hours: WeeklyHours;
+  accepting_orders: boolean;
+  pickup_interval_minutes: number;
+  preparation_minutes: number;
+  last_pickup_before_close_min: number;
+  days_ahead: number;
+}
+
+export async function fetchPublicSchedule(): Promise<ScheduleSettings | null> {
+  const { data, error } = await supabase.rpc("public_schedule_config", { p_restaurant_id: RESTAURANT_ID });
+  if (error) throw new DataError(error.message || "schedule_load_failed");
+  return data as ScheduleSettings | null;
+}
+
+export async function fetchAdminSchedule(): Promise<ScheduleSettings> {
+  return check<ScheduleSettings>(await supabase.rpc("admin_get_schedule_settings"));
+}
+
+export async function saveAdminSchedule(settings: ScheduleSettings): Promise<void> {
+  check(await supabase.rpc("admin_update_schedule_settings", { p_settings: settings }));
+}
