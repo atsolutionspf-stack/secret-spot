@@ -68,7 +68,7 @@ export default function SettingsPanel() {
   });
   if(q.isLoading) return <p className="rounded-2xl border border-white/10 p-8 text-center text-stone-400">{t.admin.loadingSettings}</p>;
   if(q.isError) return <p role="alert" className="rounded-2xl border border-red-500/20 p-8 text-center text-red-300">{t.admin.error}</p>;
-  const setNumber = (key: keyof ScheduleSettings, value: string) => setForm(f => ({...f,[key]:Number(value)}));
+  const setNumber = (key: "preparation_minutes" | "pickup_interval_minutes" | "last_pickup_before_close_min" | "days_ahead", value: string) => setForm(f => ({...f,[key]:Number(value)}));
   const submit = (e: FormEvent) => { e.preventDefault(); save.mutate(); };
   return <form data-testid="admin-settings-panel" onSubmit={submit} className="space-y-5">
     <div><h2 className="font-heading text-xl font-black uppercase text-white">{t.admin.settingsTitle}</h2><p className="mt-1 text-sm text-stone-400">{t.admin.settingsHint}</p></div>
