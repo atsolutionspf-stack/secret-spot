@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "motion/react";
-import { CalendarClock, ExternalLink, Inbox, LogOut, ShoppingBag, UtensilsCrossed } from "lucide-react";
+import { CalendarClock, ExternalLink, Inbox, LogOut, ShoppingBag, UtensilsCrossed, Settings } from "lucide-react";
 import { fetchStats, isAdmin, signOut } from "@/lib/data";
 import { useHours } from "@/lib/hours";
 import { queryClient } from "@/lib/queryClient";
@@ -15,13 +15,15 @@ import BookingsPanel from "@/components/admin/BookingsPanel";
 import MessagesPanel from "@/components/admin/MessagesPanel";
 import MenuPanel from "@/components/admin/MenuPanel";
 import OrdersPanel from "@/components/admin/OrdersPanel";
+import SettingsPanel from "@/components/admin/SettingsPanel";
 
-type TabKey = "orders" | "bookings" | "messages" | "menu";
+type TabKey = "orders" | "bookings" | "messages" | "menu" | "settings";
 const TABS: { k: TabKey; Icon: typeof Inbox }[] = [
   { k: "orders", Icon: ShoppingBag },
   { k: "bookings", Icon: CalendarClock },
   { k: "messages", Icon: Inbox },
   { k: "menu", Icon: UtensilsCrossed },
+  { k: "settings", Icon: Settings },
 ];
 
 function Dashboard() {
@@ -77,6 +79,7 @@ function Dashboard() {
         {tab === "bookings" && <BookingsPanel />}
         {tab === "messages" && <MessagesPanel />}
         {tab === "menu" && <MenuPanel />}
+        {tab === "settings" && <SettingsPanel />}
       </div>
     </div>
   );
