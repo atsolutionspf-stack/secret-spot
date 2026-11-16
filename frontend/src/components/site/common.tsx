@@ -1,7 +1,9 @@
 import { motion } from "motion/react";
 import type { ReactNode } from "react";
 import { useI18n } from "@/lib/i18n";
-import { useHours } from "@/lib/hours";
+import { useHours, weekdayOf } from "@/lib/hours";
+import { useQuery } from "@tanstack/react-query";
+import { fetchPublicSchedule } from "@/lib/data";
 import { cn } from "@/lib/utils";
 
 export function Reveal({ children, className, delay = 0 }: { children: ReactNode; className?: string; delay?: number }) {
@@ -71,28 +73,19 @@ export function LangToggle({ className }: { className?: string }) {
 export function HoursList({ testIdPrefix = "hours" }: { testIdPrefix?: string }) {
   const { t } = useI18n();
   const { weekday } = useHours();
-  const rows = [
-    { key: "mon-wed", label: t.hours.monWed, value: t.hours.closed, days: [0, 1, 2] },
-    { key: "thu", label: t.hours.thu, value: "19:00 – 00:00", days: [3] },
-    { key: "fri-sun", label: t.hours.friSun, value: "19:00 – 01:00", days: [4, 5, 6] },
-  ];
+  const schedule = useQuery({ queryKey: ["public-schedule"], queryFn: fetchPublicSchedule, staleTime: 60_000 });
+  const hours = schedule.data?.business_hours;
+  const names = t.admin.dayNames;
   return (
     <ul className="divide-y divide-white/5">
-      {rows.map((r) => {
-        const isToday = r.days.includes(weekday);
-        return (
-          <li
-            key={r.key}
-            data-testid={`${testIdPrefix}-row-${r.key}`}
-            className={cn("flex items-center justify-between gap-4 py-2.5 text-sm", isToday ? "text-white" : "text-stone-400")}
-          >
-            <span className="flex items-center gap-2">
-              {isToday && <span className="size-1.5 rounded-full bg-neon" />}
-              {r.label}
-            </span>
-            <span className={cn("font-mono", r.value === t.hours.closed ? "text-stone-500" : "text-amber-400")}>{r.value}</span>
-          </li>
-        );
+      {Array.from({ length: 7 }, (_, day) => {
+        const h = hours?.[String(day)];
+        const isToday = day === weekday;
+        const value = h ? `${h.open} – ${h.close}` : t.hours.closed;
+        return <li key={day} data-testid={`${testIdPrefix}-row-day-${day}`} className={cn("flex items-center justify-between gap-4 py-2.5 text-sm", isToday ? "text-white" : "text-stone-400")}>
+          <span className="flex items-center gap-2">{isToday && <span className="size-1.5 rounded-full bg-neon" />}{names[day]}</span>
+          <span className={cn("font-mono", !h && "text-stone-500")}>{value}</span>
+        </li>;
       })}
     </ul>
   );
