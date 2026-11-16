@@ -274,6 +274,7 @@ function DoneStep({ result }: { result: OrderResult }) {
         <p data-testid="order-confirmation-message" className="mt-2 text-stone-300">
           {persisted ? t.order.doneBody.replace("{time}", order.pickup_time) : t.order.doneBodyDemo}
         </p>
+        {persisted && <p data-testid="order-spam-notice" className="mt-3 text-sm text-amber-300/90">{t.order.spamNotice}</p>}
         {!persisted && (
           <a href={SITE.phoneHref} data-testid="order-confirmation-call" className="mt-3 inline-flex items-center gap-2 font-mono font-semibold text-amber-400">
             <Phone className="size-4" /> {SITE.phone}
