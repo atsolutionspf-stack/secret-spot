@@ -11,6 +11,7 @@ const CLOSE_LEN: Record<number, number> = { 3: 300, 4: 360, 5: 360, 6: 360 };
 
 export function slotsFor(weekdayMon0: number, schedule?: WeeklyHours): string[] {
   const configured = schedule?.[String(weekdayMon0)];
+  if (schedule && !configured) return [];
   const openMin = configured ? Number(configured.open.slice(0,2))*60+Number(configured.open.slice(3,5)) : OPEN_FROM;
   const closeMin = configured ? Number(configured.close.slice(0,2))*60+Number(configured.close.slice(3,5)) : (CLOSE_LEN[weekdayMon0] === undefined ? -1 : (OPEN_FROM+CLOSE_LEN[weekdayMon0])%(24*60));
   if (!configured && CLOSE_LEN[weekdayMon0] === undefined) return [];
@@ -56,7 +57,7 @@ function madridNowParts(hours?: WeeklyHours): HoursStatus {
   const prev = (weekday + 6) % 7;
   const prevHours = hours?.[String(prev)];
   const toMin = (s: string) => Number(s.slice(0,2))*60+Number(s.slice(3,5));
-  let open = todayHours ? (toMin(todayHours.close) <= toMin(todayHours.open) ? minutes >= toMin(todayHours.open) : minutes >= toMin(todayHours.open) && minutes < toMin(todayHours.close)) : weekday in CLOSE_LEN && minutes >= OPEN_FROM;
+  let open = hours ? (todayHours ? (toMin(todayHours.close) <= toMin(todayHours.open) ? minutes >= toMin(todayHours.open) : minutes >= toMin(todayHours.open) && minutes < toMin(todayHours.close)) : false) : weekday in CLOSE_LEN && minutes >= OPEN_FROM;
   if (prevHours && toMin(prevHours.close) <= toMin(prevHours.open) && minutes < toMin(prevHours.close)) open = true;
   else if (!hours && !open && prev in CLOSE_LEN) {
     const tail = OPEN_FROM + CLOSE_LEN[prev] - 24 * 60;
