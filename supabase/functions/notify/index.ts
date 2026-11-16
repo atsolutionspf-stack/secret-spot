@@ -328,13 +328,18 @@ async function handle(type: string, id: string) {
     const { data: o, error } = await db.from("orders").select("*").eq("id", id).single();
     if (error) throw error;
     if (!o || !o.customer_email) return;
-    if (o.status !== "preparing" && o.status !== "cancelled") return;
+    if (o.status !== "preparing" && o.status !== "cancelled" && o.status !== "ready") return;
     if (o.guest_notified_status === o.status) return;
 
     const accepted = o.status === "preparing";
     const time = new Intl.DateTimeFormat("es-ES", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Madrid" }).format(new Date(o.pickup_at));
-    const title = accepted ? "¡Pedido confirmado!" : "Pedido cancelado";
-    const intro = accepted ? "Hemos aceptado tu pedido y ya lo estamos preparando." : "Lamentamos informarte de que no podemos aceptar tu pedido.";
+    const ready = o.status === "ready";
+    const title = ready ? "¡Tu pedido está listo!" : accepted ? "¡Pedido confirmado!" : "Pedido cancelado";
+    const intro = ready
+      ? "¡Ya hemos preparado tu pedido! Puedes pasar a recogerlo en Secret Spot."
+      : accepted
+        ? "Hemos aceptado tu pedido y ya lo estamos preparando."
+        : "Lamentamos informarte de que no podemos aceptar tu pedido.";
     const inner =
       `<p style="margin:0 0 8px;font-size:15px;line-height:1.6">Hola ${esc(o.customer_name)}, ${intro}</p>` +
       rows([["Pedido", `<strong>${esc(o.order_number)}</strong>`], ["Recogida", esc(time)], ["Total", eur(o.total)]]) +
