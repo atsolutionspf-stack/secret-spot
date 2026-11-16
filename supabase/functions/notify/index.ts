@@ -3,6 +3,7 @@
 // Body: { type: "booking" | "booking_status" | "message" | "order", id }.
 // Safe to call from the browser: it only emails based on what is stored in the database.
 import { createClient } from "npm:@supabase/supabase-js@2.58.0";
+import nodemailer from "npm:nodemailer@^9";
 
 const db = createClient(
   Deno.env.get("SUPABASE_URL")!,
@@ -93,6 +94,46 @@ async function send(to: string, subject: string, html: string) {
   if (!r.ok) {
     throw new Error(`resend ${r.status}: ${await r.text()}`);
   }
+}
+
+// Orders use the existing Gmail SMTP secrets. Reservation and contact emails
+// continue using the existing Resend path above.
+async function sendOrderEmail(to: string, subject: string, html: string) {
+  if (!to) return;
+
+  const host = Deno.env.get("SMTP_HOSTNAME");
+  const port = Number(Deno.env.get("SMTP_PORT") || "465");
+  const user = Deno.env.get("SMTP_USERNAME");
+  const pass = Deno.env.get("SMTP_PASSWORD");
+  const from = Deno.env.get("SMTP_FROM");
+
+  if (!host || !user || !pass || !from || !Number.isFinite(port)) {
+    throw new Error("SMTP configuration incomplete: check SMTP_HOSTNAME, SMTP_PORT, SMTP_USERNAME, SMTP_PASSWORD and SMTP_FROM.");
+  }
+  if (port !== 465) {
+    throw new Error("Supabase Edge Functions Gmail SMTP must use port 465 (outgoing ports 25 and 587 are blocked).");
+  }
+
+  const secureValue = Deno.env.get("SMTP_SECURE");
+  const secure = secureValue ? secureValue.toLowerCase() === "true" : true;
+  if (!secure) {
+    throw new Error("SMTP_SECURE must be true when using Gmail SMTP on port 465.");
+  }
+
+  const transport = nodemailer.createTransport({
+    host,
+    port,
+    secure: true,
+    auth: { user, pass },
+  });
+
+  await transport.sendMail({
+    from,
+    to,
+    subject,
+    html,
+    replyTo: REPLY_TO || OWNER || undefined,
+  });
 }
 
 const GUEST = {
@@ -298,7 +339,7 @@ async function handle(type: string, id: string) {
       `<p style="margin:0 0 8px;font-size:15px;line-height:1.6">Hola ${esc(o.customer_name)}, ${intro}</p>` +
       rows([["Pedido", `<strong>${esc(o.order_number)}</strong>`], ["Recogida", esc(time)], ["Total", eur(o.total)]]) +
       (accepted ? `<p style="font-size:14px;color:#A8A29E">Te esperamos en Secret Spot. El pago se realiza al recoger.</p>` : `<p style="font-size:14px;color:#A8A29E">Si tienes cualquier duda, llámanos al ${tel(PHONE)}.</p>`);
-    await send(o.customer_email, `${title} · Secret Spot`, layout(title, inner));
+    await sendOrderEmail(o.customer_email, `${title} · Secret Spot`, layout(title, inner));
     const { error: updateError } = await db.from("orders").update({ guest_notified_status: o.status }).eq("id", id);
     if (updateError) throw updateError;
     return;
@@ -329,14 +370,14 @@ async function handle(type: string, id: string) {
     const notificationErrors: string[] = [];
     if (!o.owner_notified && OWNER) {
       try {
-        await send(OWNER, `Nuevo pedido para recoger ${o.order_number} · ${time} · ${eur(o.total)}`, ownerHtml);
+        await sendOrderEmail(OWNER, `Nuevo pedido para recoger ${o.order_number} · ${time} · ${eur(o.total)}`, ownerHtml);
         const { error: ownerUpdateError } = await db.from("orders").update({ owner_notified: true }).eq("id", id);
         if (ownerUpdateError) throw ownerUpdateError;
       } catch (error) { console.error("order owner notification failed", error); notificationErrors.push("owner"); }
     }
     if (o.customer_email && o.guest_notified_status !== "received") {
       try {
-        await send(o.customer_email, "Hemos recibido tu pedido · Secret Spot", guestHtml);
+        await sendOrderEmail(o.customer_email, "Hemos recibido tu pedido · Secret Spot", guestHtml);
         const { error: guestUpdateError } = await db.from("orders").update({ guest_notified_status: "received" }).eq("id", id);
         if (guestUpdateError) throw guestUpdateError;
       } catch (error) { console.error("order guest notification failed", error); notificationErrors.push("guest"); }
