@@ -1,11 +1,11 @@
 import { useMemo, useState, type FormEvent } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "motion/react";
 import { format } from "date-fns";
 import { enGB, es as esLocale } from "date-fns/locale";
 import { CalendarDays, CheckCircle2, Clock, Users } from "lucide-react";
 import { toast } from "sonner";
-import { createBooking, errorCode } from "@/lib/data";
+import { createBooking, errorCode, fetchPublicSchedule } from "@/lib/data";
 import { useI18n } from "@/lib/i18n";
 import { slotMinutes, slotsFor, useHours, weekdayOf } from "@/lib/hours";
 import { formatDate } from "@/lib/site";
@@ -32,6 +32,8 @@ export const fieldCls =
 export default function BookingSection() {
   const { t, lang } = useI18n();
   const { today, now_time } = useHours();
+  const schedule = useQuery({ queryKey: ["public-schedule"], queryFn: fetchPublicSchedule, staleTime: 60_000 });
+  const reservationHours = schedule.data?.reservation_hours;
   const [form, setForm] = useState(EMPTY);
   const [dateOpen, setDateOpen] = useState(false);
   const [done, setDone] = useState<Booking | null>(null);
@@ -39,12 +41,12 @@ export default function BookingSection() {
 
   const slots = useMemo(() => {
     if (!form.date) return [];
-    const all = slotsFor(weekdayOf(form.date));
+    const all = slotsFor(weekdayOf(form.date), reservationHours);
     if (form.date !== today) return all;
     const [h, m] = now_time.split(":").map(Number);
     const nowMin = h * 60 + m;
     return all.filter((s) => slotMinutes(s) > nowMin);
-  }, [form.date, today, now_time]);
+  }, [form.date, today, now_time, reservationHours]);
 
   const set = (k: keyof typeof EMPTY, v: string) => setForm((f) => ({ ...f, [k]: v }));
 
@@ -175,7 +177,7 @@ export default function BookingSection() {
                           }}
                           disabled={(d) => {
                             const iso = format(d, "yyyy-MM-dd");
-                            return iso < today || iso > maxIso || slotsFor(weekdayOf(iso)).length === 0;
+                            return iso < today || iso > maxIso || slotsFor(weekdayOf(iso), reservationHours).length === 0;
                           }}
                         />
                         <p className="px-2 pb-1 text-xs text-stone-500">{t.booking.closedDays}</p>
