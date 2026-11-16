@@ -111,6 +111,7 @@ export default function BookingSection() {
                   <div>
                     <h3 className="font-heading text-3xl font-black uppercase text-white">{t.booking.successTitle}</h3>
                     <p className="mt-2 text-stone-300">{t.booking.successBody}</p>
+                    <p data-testid="booking-spam-notice" className="mt-3 text-sm text-amber-300/90">{t.booking.spamNotice}</p>
                   </div>
                   <dl className="grid w-full grid-cols-2 gap-3 rounded-2xl border border-white/10 bg-[#0B0E14] p-5 text-sm">
                     <div>
