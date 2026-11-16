@@ -2,17 +2,23 @@
 // which are the source of truth for bookings and orders.
 import { useEffect, useState } from "react";
 import type { HoursStatus } from "./types";
+import { useQuery } from "@tanstack/react-query";
+import { fetchPublicSchedule, type WeeklyHours } from "./data";
 
 const OPEN_FROM = 19 * 60;
 // weekday Mon=0 → service length in minutes from 19:00
 const CLOSE_LEN: Record<number, number> = { 3: 300, 4: 360, 5: 360, 6: 360 };
 
-export function slotsFor(weekdayMon0: number): string[] {
-  const len = CLOSE_LEN[weekdayMon0];
-  if (len === undefined) return [];
+export function slotsFor(weekdayMon0: number, schedule?: WeeklyHours): string[] {
+  const configured = schedule?.[String(weekdayMon0)];
+  const openMin = configured ? Number(configured.open.slice(0,2))*60+Number(configured.open.slice(3,5)) : OPEN_FROM;
+  const closeMin = configured ? Number(configured.close.slice(0,2))*60+Number(configured.close.slice(3,5)) : (CLOSE_LEN[weekdayMon0] === undefined ? -1 : (OPEN_FROM+CLOSE_LEN[weekdayMon0])%(24*60));
+  if (!configured && CLOSE_LEN[weekdayMon0] === undefined) return [];
   const out: string[] = [];
-  for (let m = OPEN_FROM; m <= OPEN_FROM + len - 30; m += 30) {
-    const mm = m % (24 * 60);
+  let duration = closeMin - openMin;
+  if (duration <= 0) duration += 24*60;
+  for (let m = 0; m <= duration - 30; m += 30) {
+    const mm = (openMin + m) % (24 * 60);
     out.push(`${String(Math.floor(mm / 60)).padStart(2, "0")}:${String(mm % 60).padStart(2, "0")}`);
   }
   return out;
@@ -31,7 +37,7 @@ export function weekdayOf(iso: string): number {
   return (new Date(Date.UTC(y, m - 1, d)).getUTCDay() + 6) % 7;
 }
 
-function madridNowParts(): HoursStatus {
+function madridNowParts(hours?: WeeklyHours): HoursStatus {
   const parts = new Intl.DateTimeFormat("en-GB", {
     timeZone: "Europe/Madrid",
     year: "numeric",
@@ -46,9 +52,13 @@ function madridNowParts(): HoursStatus {
   const now_time = `${get("hour")}:${get("minute")}`;
   const weekday = weekdayOf(today);
   const minutes = Number(get("hour")) * 60 + Number(get("minute"));
-  let open = weekday in CLOSE_LEN && minutes >= OPEN_FROM;
+  const todayHours = hours?.[String(weekday)];
   const prev = (weekday + 6) % 7;
-  if (!open && prev in CLOSE_LEN) {
+  const prevHours = hours?.[String(prev)];
+  const toMin = (s: string) => Number(s.slice(0,2))*60+Number(s.slice(3,5));
+  let open = todayHours ? (toMin(todayHours.close) <= toMin(todayHours.open) ? minutes >= toMin(todayHours.open) : minutes >= toMin(todayHours.open) && minutes < toMin(todayHours.close)) : weekday in CLOSE_LEN && minutes >= OPEN_FROM;
+  if (prevHours && toMin(prevHours.close) <= toMin(prevHours.open) && minutes < toMin(prevHours.close)) open = true;
+  else if (!hours && !open && prev in CLOSE_LEN) {
     const tail = OPEN_FROM + CLOSE_LEN[prev] - 24 * 60;
     open = tail > 0 && minutes < tail;
   }
@@ -56,10 +66,12 @@ function madridNowParts(): HoursStatus {
 }
 
 export function useHours(): HoursStatus {
-  const [now, setNow] = useState(madridNowParts);
+  const schedule = useQuery({ queryKey: ["public-schedule"], queryFn: fetchPublicSchedule, staleTime: 60_000 });
+  const [tick, setTick] = useState(0);
   useEffect(() => {
-    const id = setInterval(() => setNow(madridNowParts()), 30_000);
+    const id = setInterval(() => setTick(v => v + 1), 30_000);
     return () => clearInterval(id);
   }, []);
-  return now;
+  void tick;
+  return madridNowParts(schedule.data?.business_hours);
 }
