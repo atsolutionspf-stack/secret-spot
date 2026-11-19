@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://secret-spot.pages.dev/sitemap.xml
