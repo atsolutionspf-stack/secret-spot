@@ -76,28 +76,43 @@ const mail = (e: string) =>
 async function send(to: string, subject: string, html: string) {
   if (!to) return;
 
-  const r = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${Deno.env.get("RESEND_API_KEY")}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      from: FROM,
-      to: [to],
-      subject,
-      html,
-      reply_to: REPLY_TO || undefined,
-    }),
+  const host = Deno.env.get("SMTP_HOSTNAME");
+  const port = Number(Deno.env.get("SMTP_PORT") || "465");
+  const user = Deno.env.get("SMTP_USERNAME");
+  const pass = Deno.env.get("SMTP_PASSWORD");
+  const from = Deno.env.get("SMTP_FROM");
+
+  if (!host || !user || !pass || !from || !Number.isFinite(port)) {
+    throw new Error("SMTP configuration incomplete: check SMTP_HOSTNAME, SMTP_PORT, SMTP_USERNAME, SMTP_PASSWORD and SMTP_FROM.");
+  }
+  if (port !== 465) {
+    throw new Error("Supabase Edge Functions Gmail SMTP must use port 465 (outgoing ports 25 and 587 are blocked).");
+  }
+
+  const secureValue = Deno.env.get("SMTP_SECURE");
+  const secure = secureValue ? secureValue.toLowerCase() === "true" : true;
+  if (!secure) {
+    throw new Error("SMTP_SECURE must be true when using Gmail SMTP on port 465.");
+  }
+
+  const transport = nodemailer.createTransport({
+    host,
+    port,
+    secure: true,
+    auth: { user, pass },
   });
 
-  if (!r.ok) {
-    throw new Error(`resend ${r.status}: ${await r.text()}`);
-  }
+  await transport.sendMail({
+    from,
+    to,
+    subject,
+    html,
+    replyTo: REPLY_TO || OWNER || undefined,
+  });
 }
 
-// Orders use the existing Gmail SMTP secrets. Reservation and contact emails
-// continue using the existing Resend path above.
+// Reservations and contact emails use the existing Gmail SMTP configuration.
+// Orders use the same SMTP account through the order-specific helper below.
 async function sendOrderEmail(to: string, subject: string, html: string) {
   if (!to) return;
 
@@ -229,7 +244,7 @@ async function handle(type: string, id: string) {
       if (b.notes) r.push(["Comentarios", esc(b.notes)]);
 
       // Attempt both recipients independently. Mark each notification only after
-      // Resend accepts that specific email, so failed sends remain retryable.
+      // SMTP accepts that specific email, so failed sends remain retryable.
       const notificationErrors: string[] = [];
 
       if (!b.owner_notified && OWNER) {
