@@ -90,7 +90,16 @@ export default function Admin() {
   const me = useQuery({ queryKey: ["admin", "me"], queryFn: isAdmin, retry: false });
   const authed = me.data === true && !me.isError;
   useEffect(() => {
-    const { data } = supabase.auth.onAuthStateChange(() => queryClient.invalidateQueries({ queryKey: ["admin", "me"] }));
+    const { data } = supabase.auth.onAuthStateChange((event) => {
+      // Do not call Supabase (directly or indirectly) inside this callback:
+      // auth state callbacks run while the auth lock is held. Defer the
+      // admin check until the callback has returned to avoid a session deadlock.
+      if (event === "SIGNED_IN" || event === "SIGNED_OUT") {
+        setTimeout(() => {
+          void queryClient.invalidateQueries({ queryKey: ["admin", "me"] });
+        }, 0);
+      }
+    });
     return () => data.subscription.unsubscribe();
   }, []);
   const logout = async () => {
