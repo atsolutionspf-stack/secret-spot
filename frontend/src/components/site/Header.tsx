@@ -17,9 +17,8 @@ const LINKS = [
 
 export function Logo({ className }: { className?: string }) {
   return (
-    <a href="#top" data-testid="header-logo-link" className={cn("group flex items-baseline gap-1 leading-none", className)}>
-      <span className="font-heading text-xl font-black uppercase tracking-tight text-white">Secret</span>
-      <span className="animate-flicker font-heading text-xl font-black uppercase tracking-tight neon-text">Spot</span>
+    <a href="#top" data-testid="header-logo-link" aria-label="Secret Spot" className={cn("group flex items-center leading-none", className)}>
+      <img src="/secret-spot-logo.png" alt="Secret Spot" className="h-10 w-auto max-w-[180px] object-contain sm:h-11 sm:max-w-[210px]" />
     </a>
   );
 }
