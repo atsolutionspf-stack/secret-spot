@@ -18,8 +18,8 @@ export const SITE = {
 export const IMAGES = {
   hero: "https://images.unsplash.com/photo-1779942579124-6fe3c1a686e0?crop=entropy&cs=srgb&fm=jpg&q=80&w=1800",
   heroBurger: "https://images.pexels.com/photos/36741809/pexels-photo-36741809.jpeg?auto=compress&cs=tinysrgb&w=900",
-  story: "https://images.pexels.com/photos/24245659/pexels-photo-24245659.jpeg?auto=compress&cs=tinysrgb&w=1000",
-  storyNight: "https://images.pexels.com/photos/26181553/pexels-photo-26181553.jpeg?auto=compress&cs=tinysrgb&w=900",
+  story: "/secret-spot-burgers.webp",
+  storyNight: "/secret-spot-van.webp",
   burgers: "https://images.pexels.com/photos/36741809/pexels-photo-36741809.jpeg?auto=compress&cs=tinysrgb&w=1200",
   alitas: "https://images.pexels.com/photos/27668695/pexels-photo-27668695.jpeg?auto=compress&cs=tinysrgb&w=1200",
   poke: "https://images.unsplash.com/photo-1597958792579-bd3517df6399?crop=entropy&cs=srgb&fm=jpg&q=80&w=1200",
@@ -64,4 +64,3 @@ export function formatDate(iso: string, lang: "es" | "en"): string {
     }
   ).format(date);
 }
-
