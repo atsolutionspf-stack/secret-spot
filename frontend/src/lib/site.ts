@@ -20,7 +20,7 @@ export const IMAGES = {
   heroBurger: "/big-secret.webp",
   story: "/secret-spot-burgers.webp",
   storyNight: "/secret-spot-van.webp",
-  burgers: "/carta-secret-spot.webp",
+  burgers: "/carta-secret-spot-q85.webp",
   alitas: "https://images.pexels.com/photos/27668695/pexels-photo-27668695.jpeg?auto=compress&cs=tinysrgb&w=1200",
   poke: "https://images.unsplash.com/photo-1597958792579-bd3517df6399?crop=entropy&cs=srgb&fm=jpg&q=80&w=1200",
   sides: "https://images.pexels.com/photos/12557551/pexels-photo-12557551.jpeg?auto=compress&cs=tinysrgb&w=1200",
