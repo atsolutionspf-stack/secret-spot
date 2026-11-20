@@ -1,7 +1,7 @@
 import { motion } from "motion/react";
 import { ArrowRight, Flame, MapPin } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
-import { formatPrice } from "@/lib/site";
+import { IMAGES, formatPrice } from "@/lib/site";
 import { OpenBadge } from "./common";
 import OrderButton from "@/features/orders/components/OrderButton";
 
