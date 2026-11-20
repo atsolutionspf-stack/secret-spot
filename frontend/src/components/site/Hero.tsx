@@ -1,7 +1,7 @@
 import { motion } from "motion/react";
 import { ArrowRight, Flame, MapPin } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
-import { IMAGES, formatPrice } from "@/lib/site";
+import { formatPrice } from "@/lib/site";
 import { OpenBadge } from "./common";
 import OrderButton from "@/features/orders/components/OrderButton";
 
@@ -10,8 +10,8 @@ export default function Hero() {
   return (
     <section id="top" data-testid="hero-section" className="grain relative overflow-hidden">
       <div className="absolute inset-0">
-        <img src={IMAGES.hero} alt="" className="h-full w-full object-cover opacity-60" />
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(11,14,20,0.85)_0%,rgba(11,14,20,0.65)_50%,#0B0E14_100%)]" />
+        <img src="/secret-spot-interior.jpg" alt="" className="h-full w-full object-cover object-center opacity-75" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(11,14,20,0.72)_0%,rgba(11,14,20,0.52)_50%,#0B0E14_100%)]" />
         <div className="absolute -left-40 top-20 size-[420px] rounded-full bg-neon/20 blur-[120px]" />
         <div className="absolute -right-20 bottom-10 size-[360px] rounded-full bg-cyan-500/10 blur-[120px]" />
       </div>
@@ -69,7 +69,7 @@ export default function Hero() {
             </a>
             <OrderButton variant="hero" />
           </motion.div>
-          <p className="mt-6 font-mono text-xs uppercase tracking-widest text-stone-500">{t.hero.tonight}</p>
+          <p className="mt-6 font-mono text-xs uppercase tracking-widest text-stone-300">{t.hero.tonight}</p>
         </div>
 
         <motion.div
