@@ -18,7 +18,7 @@ export const SITE = {
 export const IMAGES = {
   hero: "https://images.unsplash.com/photo-1779942579124-6fe3c1a686e0?crop=entropy&cs=srgb&fm=jpg&q=80&w=1800",
   heroBurger: "/big-secret.webp",
-  story: "/secret-spot-burgers.webp",
+  story: "/secret-spot-historia.webp",
   storyNight: "/secret-spot-van.webp",
   burgers: "/carta-secret-spot.webp",
   alitas: "https://images.pexels.com/photos/27668695/pexels-photo-27668695.jpeg?auto=compress&cs=tinysrgb&w=1200",
