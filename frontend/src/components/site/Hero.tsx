@@ -9,10 +9,8 @@ export default function Hero() {
   const { t, lang } = useI18n();
   return (
     <section id="top" data-testid="hero-section" className="grain relative overflow-hidden">
-      <div className="absolute inset-0">
-        <img src="/secret-spot-interior.jpg" alt="" fetchPriority="high" loading="eager" decoding="async" className="h-full w-full object-cover object-center opacity-75" />
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(11,14,20,0.72)_0%,rgba(11,14,20,0.52)_50%,#0B0E14_100%)]" />
-        <div className="absolute -left-40 top-20 size-[420px] rounded-full bg-neon/20 blur-[120px]" />
+      <div aria-hidden="true" className="absolute inset-0 bg-[linear-gradient(145deg,#141923_0%,#0B0E14_52%,#101923_100%)]">
+        <div className="absolute -left-40 top-20 size-[420px] rounded-full bg-neon/15 blur-[120px]" />
         <div className="absolute -right-20 bottom-10 size-[360px] rounded-full bg-cyan-500/10 blur-[120px]" />
       </div>
 
