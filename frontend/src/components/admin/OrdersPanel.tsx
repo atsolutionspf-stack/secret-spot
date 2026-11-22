@@ -22,7 +22,7 @@ type Filter = "all" | AdminOrderStatus;
 export default function OrdersPanel() {
   const { t, lang } = useI18n();
   const [filter, setFilter] = useState<Filter>("all");
-  const q = useQuery({ queryKey: ["admin", "orders"], queryFn: listOrders, refetchInterval: 30_000 });
+  const q = useQuery({ queryKey: ["admin", "orders"], queryFn: listOrders, refetchInterval: 5_000 });
   const update = useMutation({
     mutationFn: ({ id, status }: { id: string; status: AdminOrderStatus }) => updateOrderStatus(id, status),
     onSuccess: () => {

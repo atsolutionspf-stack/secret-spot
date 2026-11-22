@@ -16,7 +16,7 @@ const invalidate = () => {
 export default function MessagesPanel() {
   const { t, lang } = useI18n();
   const [openId, setOpenId] = useState<string | null>(null);
-  const q = useQuery({ queryKey: ["admin", "messages"], queryFn: listMessages });
+  const q = useQuery({ queryKey: ["admin", "messages"], queryFn: listMessages, refetchInterval: 30_000 });
   const mark = useMutation({
     mutationFn: ({ id, body }: { id: string; body: MessageUpdate }) => setMessageRead(id, body.read),
     onSuccess: invalidate,
