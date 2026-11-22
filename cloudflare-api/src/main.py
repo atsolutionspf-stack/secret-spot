@@ -14,10 +14,17 @@ app = FastAPI(title="Secret Spot API")
 
 app.add_middleware(
     CORSMiddleware,
-    # Production domain plus Cloudflare Pages preview/deployment URLs for this site.
-    # Keep the pattern restricted to secret-spot.pages.dev; do not allow arbitrary origins.
-    allow_origins=["https://secret-spot.pages.dev"],
-    allow_origin_regex=r"https://([a-z0-9-]+\.)?secret-spot\.pages\.dev",
+    # Production custom domain and Cloudflare Pages preview/deployment URLs.
+    # Restrict CORS to this site's known production and Pages hosts.
+    allow_origins=[
+        "https://secretspotpuzol.com",
+        "https://www.secretspotpuzol.com",
+        "https://secret-spot.pages.dev",
+    ],
+    allow_origin_regex=(
+        r"https://(?:[a-z0-9-]+\.)?secret-spot\.pages\.dev"
+        r"|https://(?:www\.)?secretspotpuzol\.com"
+    ),
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["Content-Type"],
 )
