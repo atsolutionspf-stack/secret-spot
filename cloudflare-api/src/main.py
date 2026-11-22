@@ -20,7 +20,7 @@ app.add_middleware(
         "https://www.secretspotpuzol.com",
         "https://secret-spot.pages.dev",
     ],
-    allow_origin_regex=r"https://([a-z0-9-]+\\.)?secret-spot\\.pages\\.dev",
+    allow_origin_regex=r"https://([a-z0-9-]+\.)?secret-spot\.pages\.dev",
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["Content-Type"],
 )
