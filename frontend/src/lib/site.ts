@@ -24,7 +24,7 @@ export const IMAGES = {
   alitas: "https://images.pexels.com/photos/27668695/pexels-photo-27668695.jpeg?auto=compress&cs=tinysrgb&w=1200",
   poke: "https://images.unsplash.com/photo-1597958792579-bd3517df6399?crop=entropy&cs=srgb&fm=jpg&q=80&w=1200",
   sides: "https://images.pexels.com/photos/12557551/pexels-photo-12557551.jpeg?auto=compress&cs=tinysrgb&w=1200",
-  sweets: "https://images.unsplash.com/photo-1547414368-ac947d00b91d?crop=entropy&cs=srgb&fm=jpg&q=80&w=1200",
+  sweets: "/postres-secret-spot.webp",
   wings: "https://images.unsplash.com/photo-1637273484026-11d51fb64024?crop=entropy&cs=srgb&fm=jpg&q=80&w=900",
 };
 
