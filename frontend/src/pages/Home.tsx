@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import Header from "@/components/site/Header";
 import Hero from "@/components/site/Hero";
 import { Services, Story } from "@/components/site/StoryServices";
@@ -5,7 +6,19 @@ import MenuSection from "@/components/site/MenuSection";
 import BookingSection from "@/components/site/BookingSection";
 import ContactSection from "@/components/site/ContactSection";
 import { Footer, MobileBar } from "@/components/site/Footer";
-import OrderSheet from "@/features/orders/components/OrderSheet";
+import { useCart } from "@/features/orders/CartProvider";
+
+const OrderSheet = lazy(() => import("@/features/orders/components/OrderSheet"));
+
+function DeferredOrderSheet() {
+  const { isOpen } = useCart();
+  if (!isOpen) return null;
+  return (
+    <Suspense fallback={null}>
+      <OrderSheet />
+    </Suspense>
+  );
+}
 
 export default function Home() {
   return (
@@ -21,7 +34,7 @@ export default function Home() {
       </main>
       <Footer />
       <MobileBar />
-      <OrderSheet />
+      <DeferredOrderSheet />
     </div>
   );
 }
