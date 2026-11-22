@@ -4,6 +4,7 @@ import { Mail, MessageSquareText, Phone, Users } from "lucide-react";
 import { toast } from "sonner";
 import { listBookings, updateBookingStatus } from "@/lib/data";
 import { useI18n } from "@/lib/i18n";
+import { useHours } from "@/lib/hours";
 import { queryClient } from "@/lib/queryClient";
 import { formatDate } from "@/lib/site";
 import { BOOKING_STATUSES, type Booking, type BookingStatus, type BookingStatusUpdate } from "@/lib/types";
@@ -28,6 +29,7 @@ const CONFIRMED_ACTIONS: typeof ACTIONS = [
 
 export default function BookingsPanel() {
   const { t, lang } = useI18n();
+  const { today } = useHours();
   const [filter, setFilter] = useState<string>("all");
   const q = useQuery({
     queryKey: ["admin", "bookings", filter],
@@ -50,11 +52,42 @@ export default function BookingsPanel() {
   });
 
   const rows = q.data && !q.isError ? q.data : [];
-  const groups = rows.reduce<Record<string, Booking[]>>((acc, b) => {
-    (acc[b.date] ||= []).push(b);
+  const addDays = (iso: string, days: number) => {
+    const [year, month, day] = iso.split("-").map(Number);
+    return new Date(Date.UTC(year, month - 1, day + days)).toISOString().slice(0, 10);
+  };
+  const lastDay = addDays(today, 15);
+  const todayRows = rows.filter((booking) => booking.date === today);
+  const upcomingRows = rows.filter((booking) => booking.date > today && booking.date <= lastDay);
+  const upcomingGroups = upcomingRows.reduce<Record<string, Booking[]>>((acc, booking) => {
+    (acc[booking.date] ||= []).push(booking);
     return acc;
   }, {});
   const labels: Record<string, string> = { all: t.admin.all, ...t.admin.statuses };
+  const renderBooking = (b: Booking) => (
+    <li key={b.id} data-testid={`admin-booking-${b.id}`} className="rounded-2xl border border-white/[0.07] bg-[#1C2331] p-4 sm:p-5">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="flex items-center gap-4">
+          <span className="rounded-xl bg-[#0B0E14] px-3 py-2 font-mono text-lg font-bold text-amber-400">{b.time}</span>
+          <div><p data-testid="admin-booking-name" className="font-semibold text-white">{b.name}</p>
+            <p className="flex items-center gap-1 text-sm text-stone-400"><Users className="size-3.5" /> {b.party_size} {t.admin.guests} · <span className="font-mono text-xs">{b.code}</span></p></div>
+        </div>
+        <span data-testid="admin-booking-status" className={cn("rounded-full border px-2.5 py-0.5 text-xs font-semibold uppercase", STATUS_STYLE[b.status])}>{t.admin.statuses[b.status]}</span>
+      </div>
+      <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm text-stone-300">
+        <a href={`tel:${b.phone}`} className="inline-flex items-center gap-1 hover:text-amber-400"><Phone className="size-3.5" /> {b.phone}</a>
+        <a href={`mailto:${b.email}`} className="inline-flex items-center gap-1 break-all hover:text-amber-400"><Mail className="size-3.5" /> {b.email}</a>
+      </div>
+      {b.note && <p className="mt-2 flex items-start gap-1.5 text-sm text-stone-400"><MessageSquareText className="mt-0.5 size-3.5 shrink-0" /> {b.note}</p>}
+      <div className="mt-4 flex flex-wrap gap-2">
+        {(b.status === "pending" ? ACTIONS : b.status === "confirmed" ? CONFIRMED_ACTIONS : []).map((a) => (
+          <button key={a.key} type="button" data-testid={`admin-booking-${a.key}-button`} disabled={update.isPending}
+            onClick={() => update.mutate({ id: b.id, body: { status: a.status } })}
+            className={cn("rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-wide transition-colors disabled:opacity-50", a.cls)}>{t.admin[a.key]}</button>
+        ))}
+      </div>
+    </li>
+  );
 
   return (
     <div data-testid="admin-bookings-panel">
@@ -72,57 +105,27 @@ export default function BookingsPanel() {
         </Select>
       </div>
 
-      {rows.length === 0 && !q.isLoading && (
+      {!q.isLoading && todayRows.length === 0 && upcomingRows.length === 0 && (
         <p data-testid="admin-bookings-empty" className="rounded-2xl border border-dashed border-white/10 p-8 text-center text-stone-400">{t.admin.noBookings}</p>
       )}
-
       <div className="space-y-8">
-        {Object.entries(groups).map(([date, list]) => (
-          <section key={date}>
-            <h3 className="mb-3 font-heading text-sm font-bold uppercase tracking-widest text-stone-400 capitalize">{formatDate(date, lang)}</h3>
-            <ul className="space-y-3">
-              {list.map((b) => (
-                <li key={b.id} data-testid={`admin-booking-${b.id}`} className="rounded-2xl border border-white/[0.07] bg-[#1C2331] p-4 sm:p-5">
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div className="flex items-center gap-4">
-                      <span className="rounded-xl bg-[#0B0E14] px-3 py-2 font-mono text-lg font-bold text-amber-400">{b.time}</span>
-                      <div>
-                        <p data-testid="admin-booking-name" className="font-semibold text-white">{b.name}</p>
-                        <p className="flex items-center gap-1 text-sm text-stone-400">
-                          <Users className="size-3.5" /> {b.party_size} {t.admin.guests} · <span className="font-mono text-xs">{b.code}</span>
-                        </p>
-                      </div>
-                    </div>
-                    <span data-testid="admin-booking-status" className={cn("rounded-full border px-2.5 py-0.5 text-xs font-semibold uppercase", STATUS_STYLE[b.status])}>
-                      {t.admin.statuses[b.status]}
-                    </span>
-                  </div>
-                  <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm text-stone-300">
-                    <a href={`tel:${b.phone}`} className="inline-flex items-center gap-1 hover:text-amber-400"><Phone className="size-3.5" /> {b.phone}</a>
-                    <a href={`mailto:${b.email}`} className="inline-flex items-center gap-1 break-all hover:text-amber-400"><Mail className="size-3.5" /> {b.email}</a>
-                  </div>
-                  {b.note && (
-                    <p className="mt-2 flex items-start gap-1.5 text-sm text-stone-400"><MessageSquareText className="mt-0.5 size-3.5 shrink-0" /> {b.note}</p>
-                  )}
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {(b.status === "pending" ? ACTIONS : b.status === "confirmed" ? CONFIRMED_ACTIONS : []).map((a) => (
-                      <button
-                        key={a.key}
-                        type="button"
-                        data-testid={`admin-booking-${a.key}-button`}
-                        disabled={update.isPending}
-                        onClick={() => update.mutate({ id: b.id, body: { status: a.status } })}
-                        className={cn("rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-wide transition-colors disabled:opacity-50", a.cls)}
-                      >
-                        {t.admin[a.key]}
-                      </button>
-                    ))}
-                  </div>
-                </li>
+        <section data-testid="admin-bookings-today">
+          <h3 className="mb-3 font-heading text-sm font-bold uppercase tracking-widest text-amber-400">{lang === "es" ? "Reservas de hoy" : "Today's reservations"}</h3>
+          {todayRows.length ? <ul className="space-y-3">{todayRows.map(renderBooking)}</ul> : <p className="rounded-xl border border-dashed border-white/10 p-5 text-sm text-stone-500">{lang === "es" ? "No hay reservas para hoy." : "No reservations for today."}</p>}
+        </section>
+        <section data-testid="admin-bookings-upcoming">
+          <h3 className="mb-3 font-heading text-sm font-bold uppercase tracking-widest text-stone-400">{lang === "es" ? "Próximos 15 días" : "Next 15 days"}</h3>
+          {Object.entries(upcomingGroups).length ? (
+            <div className="space-y-6">
+              {Object.entries(upcomingGroups).map(([date, list]) => (
+                <div key={date}>
+                  <h4 className="mb-3 font-heading text-xs font-bold uppercase tracking-widest text-stone-500">{formatDate(date, lang)}</h4>
+                  <ul className="space-y-3">{list.map(renderBooking)}</ul>
+                </div>
               ))}
-            </ul>
-          </section>
-        ))}
+            </div>
+          ) : <p className="rounded-xl border border-dashed border-white/10 p-5 text-sm text-stone-500">{lang === "es" ? "No hay reservas en los próximos 15 días." : "No reservations in the next 15 days."}</p>}
+        </section>
       </div>
     </div>
   );

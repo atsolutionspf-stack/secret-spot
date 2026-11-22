@@ -14,12 +14,9 @@ app = FastAPI(title="Secret Spot API")
 
 app.add_middleware(
     CORSMiddleware,
-    # Production custom domain, legacy Pages URL and Pages preview URLs.
-    allow_origins=[
-        "https://secretspotpuzol.com",
-        "https://www.secretspotpuzol.com",
-        "https://secret-spot.pages.dev",
-    ],
+    # Production domain plus Cloudflare Pages preview/deployment URLs for this site.
+    # Keep the pattern restricted to secret-spot.pages.dev; do not allow arbitrary origins.
+    allow_origins=["https://secret-spot.pages.dev"],
     allow_origin_regex=r"https://([a-z0-9-]+\.)?secret-spot\.pages\.dev",
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["Content-Type"],
@@ -168,7 +165,7 @@ async def get_order_config(request: Request):
 MAX_BODY_BYTES = 16 * 1024
 MAX_LINES = 30
 MAX_QTY_PER_LINE = 20
-PHONE_RE = re.compile(r"^\+?[0-9][0-9 ()-]{5,19}$")
+PHONE_RE = re.compile(r"^\+?[0-9][0-9 ()\-]{5,19}$")
 EMAIL_RE = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]+$")
 CONTROL_RE = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
 CENT = Decimal("0.01")
@@ -353,7 +350,6 @@ async def create_order(request: Request):
         currency=saved.get("currency") or "EUR",
     )
 
-
 @app.get("/api/debug/routes")
 async def debug_routes():
     return {
@@ -365,6 +361,5 @@ async def debug_routes():
             for route in app.routes
         ]
     }
-
 
 Default = asgi.entrypoint(app)
