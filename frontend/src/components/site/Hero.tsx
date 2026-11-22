@@ -10,7 +10,7 @@ export default function Hero() {
   return (
     <section id="top" data-testid="hero-section" className="grain relative overflow-hidden">
       <div className="absolute inset-0">
-        <img src="/secret-spot-interior.jpg" alt="" className="h-full w-full object-cover object-center opacity-75" />
+        <img src="/secret-spot-interior.jpg" alt="" fetchPriority="high" loading="eager" decoding="async" className="h-full w-full object-cover object-center opacity-75" />
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(11,14,20,0.72)_0%,rgba(11,14,20,0.52)_50%,#0B0E14_100%)]" />
         <div className="absolute -left-40 top-20 size-[420px] rounded-full bg-neon/20 blur-[120px]" />
         <div className="absolute -right-20 bottom-10 size-[360px] rounded-full bg-cyan-500/10 blur-[120px]" />
@@ -79,7 +79,7 @@ export default function Hero() {
           className="relative hidden lg:col-span-5 lg:block"
         >
           <div className="animate-float relative mx-auto aspect-[4/5] w-full max-w-md overflow-hidden rounded-[2rem] neon-border">
-            <img src={IMAGES.heroBurger} alt="Big Secret burger" className="h-full w-full object-cover" />
+            <img src={IMAGES.heroBurger} alt="Big Secret burger" loading="lazy" decoding="async" className="h-full w-full object-cover" />
             <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 to-transparent p-6">
               <p className="font-mono text-xs uppercase tracking-[0.2em] text-amber-400">{t.hero.signature}</p>
               <div className="mt-1 flex items-end justify-between">

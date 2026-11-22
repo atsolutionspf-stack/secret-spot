@@ -15,10 +15,10 @@ export function Story() {
       <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-12">
         <Reveal className="relative lg:col-span-5">
           <div className="relative aspect-[4/5] overflow-hidden rounded-[2rem] border border-white/10">
-            <img src={IMAGES.story} alt="Secret Spot kitchen" className="h-full w-full object-cover" />
+            <img src={IMAGES.story} alt="Secret Spot kitchen" loading="lazy" decoding="async" className="h-full w-full object-cover" />
           </div>
           <div className="absolute -bottom-8 -right-4 hidden w-48 overflow-hidden rounded-2xl border-4 border-[#0B0E14] sm:block lg:-right-10">
-            <img src={IMAGES.storyNight} alt="Beach at night" className="aspect-square w-full object-cover" />
+            <img src={IMAGES.storyNight} alt="Beach at night" loading="lazy" decoding="async" className="aspect-square w-full object-cover" />
           </div>
         </Reveal>
         <div className="lg:col-span-6 lg:col-start-7">

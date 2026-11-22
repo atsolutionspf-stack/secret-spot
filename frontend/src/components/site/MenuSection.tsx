@@ -82,7 +82,7 @@ export default function MenuSection() {
           className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-12"
         >
           <div className="relative overflow-hidden rounded-[1.75rem] border border-white/10 lg:col-span-4">
-            <img src={IMAGES[cat]} alt={t.menu.categories[cat]} className="h-56 w-full object-cover lg:h-full lg:min-h-[420px]" />
+            <img src={IMAGES[cat]} alt={t.menu.categories[cat]} loading="lazy" decoding="async" className="h-56 w-full object-cover lg:h-full lg:min-h-[420px]" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
             <div className="absolute inset-x-0 bottom-0 p-6">
               <p className="font-heading text-4xl font-black uppercase text-white">{t.menu.categories[cat]}</p>
