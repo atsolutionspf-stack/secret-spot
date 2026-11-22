@@ -88,11 +88,13 @@ export async function submitOrder(
   };
 }
 
-export function useOrderConfig() {
+export function useOrderConfig(enabled = true) {
   return useQuery({
     queryKey: orderKeys.config,
     queryFn: fetchOrderConfig,
-    refetchInterval: 60_000,
+    enabled,
+    staleTime: 30_000,
+    refetchInterval: enabled ? 60_000 : false,
   });
 }
 
