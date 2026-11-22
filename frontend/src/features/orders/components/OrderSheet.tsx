@@ -327,8 +327,13 @@ function DoneStep({ result }: { result: OrderResult }) {
 export default function OrderSheet() {
   const { t, lang } = useI18n();
   const cart = useCart();
-  const menuQ = useQuery({ queryKey: ["menu"], queryFn: fetchMenu });
-  const cfgQ = useOrderConfig();
+  const menuQ = useQuery({
+    queryKey: ["menu"],
+    queryFn: fetchMenu,
+    enabled: cart.isOpen,
+    staleTime: 60_000,
+  });
+  const cfgQ = useOrderConfig(cart.isOpen);
   const menu = useMemo(() => (menuQ.data && !menuQ.isError ? menuQ.data : []), [menuQ.data, menuQ.isError]);
   const config = cfgQ.data && !cfgQ.isError ? cfgQ.data : null;
   const priced = useMemo(() => priceCart(cart.lines, menu), [cart.lines, menu]);

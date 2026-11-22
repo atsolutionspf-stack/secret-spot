@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "motion/react";
 import { Flame, Leaf, Sparkles, Star } from "lucide-react";
@@ -30,11 +30,38 @@ export function TagBadge({ tag, label }: { tag: Tag; label: string }) {
 export default function MenuSection() {
   const { t, lang } = useI18n();
   const [cat, setCat] = useState<Category>("burgers");
-  const { data, isLoading, isError } = useQuery({ queryKey: ["menu"], queryFn: fetchMenu });
+  const [nearViewport, setNearViewport] = useState(false);
+  const [sectionElement, setSectionElement] = useState<HTMLElement | null>(null);
+
+  useEffect(() => {
+    if (!sectionElement || nearViewport) return;
+    if (typeof IntersectionObserver === "undefined") {
+      setNearViewport(true);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setNearViewport(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "500px 0px" },
+    );
+    observer.observe(sectionElement);
+    return () => observer.disconnect();
+  }, [sectionElement, nearViewport]);
+
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["menu"],
+    queryFn: fetchMenu,
+    enabled: nearViewport,
+    staleTime: 60_000,
+  });
   const items = !isError && data ? data.filter((i) => i.category === cat) : [];
 
   return (
-    <section id="menu" data-testid="menu-section" className="relative mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8 lg:py-32">
+    <section ref={setSectionElement} id="menu" data-testid="menu-section" className="relative mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8 lg:py-32">
       <Reveal className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
           <SectionLabel>{t.menu.label}</SectionLabel>
