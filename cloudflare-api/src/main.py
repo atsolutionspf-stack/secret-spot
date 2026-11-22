@@ -168,9 +168,9 @@ async def get_order_config(request: Request):
 MAX_BODY_BYTES = 16 * 1024
 MAX_LINES = 30
 MAX_QTY_PER_LINE = 20
-PHONE_RE = re.compile(r"^\\+?[0-9][0-9 ()\\-]{5,19}$")
-EMAIL_RE = re.compile(r"^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")
-CONTROL_RE = re.compile(r"[\\x00-\\x08\\x0b\\x0c\\x0e-\\x1f\\x7f]")
+PHONE_RE = re.compile(r"^\+?[0-9][0-9 ()-]{5,19}$")
+EMAIL_RE = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]+$")
+CONTROL_RE = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
 CENT = Decimal("0.01")
 
 # Messages raised by public.create_pickup_order (see sql/create_pickup_order.sql).
