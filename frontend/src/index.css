@@ -2,7 +2,6 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/space-grotesk";
-@import "@fontsource-variable/jetbrains-mono";
 @import "@fontsource-variable/plus-jakarta-sans";
 
 @custom-variant dark (&:is(.dark *));
@@ -10,7 +9,7 @@
 @theme inline {
     --font-heading: 'Space Grotesk Variable', sans-serif;
     --font-sans: 'Plus Jakarta Sans Variable', sans-serif;
-    --font-mono: 'JetBrains Mono Variable', monospace;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
     --color-neon: #FF5722;
     --color-neon-soft: #FF6B4A;
     --color-amber-glow: #F59E0B;

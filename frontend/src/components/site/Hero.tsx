@@ -77,7 +77,7 @@ export default function Hero() {
           className="relative hidden lg:col-span-5 lg:block"
         >
           <div className="animate-float relative mx-auto aspect-[4/5] w-full max-w-md overflow-hidden rounded-[2rem] neon-border">
-            <img src={IMAGES.heroBurger} alt="Big Secret burger" loading="lazy" decoding="async" className="h-full w-full object-cover" />
+            <img src={IMAGES.heroBurger} alt="Big Secret burger" loading="eager" fetchPriority="high" decoding="async" className="h-full w-full object-cover" />
             <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 to-transparent p-6">
               <p className="font-mono text-xs uppercase tracking-[0.2em] text-amber-400">{t.hero.signature}</p>
               <div className="mt-1 flex items-end justify-between">
