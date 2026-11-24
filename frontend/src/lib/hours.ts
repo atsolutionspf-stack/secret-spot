@@ -67,7 +67,14 @@ function madridNowParts(hours?: WeeklyHours): HoursStatus {
 }
 
 export function useHours(): HoursStatus {
-  const schedule = useQuery({ queryKey: ["public-schedule"], queryFn: fetchPublicSchedule, staleTime: 60_000 });
+  const [scheduleEnabled, setScheduleEnabled] = useState(false);
+  useEffect(() => {
+    // The opening-hours badge is informative, not required to paint the first screen.
+    // Let the hero render before contacting Supabase for configurable hours.
+    const id = window.setTimeout(() => setScheduleEnabled(true), 1500);
+    return () => window.clearTimeout(id);
+  }, []);
+  const schedule = useQuery({ queryKey: ["public-schedule"], queryFn: fetchPublicSchedule, staleTime: 60_000, enabled: scheduleEnabled });
   const [tick, setTick] = useState(0);
   useEffect(() => {
     const id = setInterval(() => setTick(v => v + 1), 30_000);

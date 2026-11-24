@@ -73,7 +73,8 @@ export function LangToggle({ className }: { className?: string }) {
 export function HoursList({ testIdPrefix = "hours" }: { testIdPrefix?: string }) {
   const { t } = useI18n();
   const { weekday } = useHours();
-  const schedule = useQuery({ queryKey: ["public-schedule"], queryFn: fetchPublicSchedule, staleTime: 60_000 });
+  // The shared query is started by useHours after the initial screen has painted.
+  const schedule = useQuery({ queryKey: ["public-schedule"], queryFn: fetchPublicSchedule, staleTime: 60_000, enabled: false });
   const hours = schedule.data?.business_hours;
   const names = t.admin.dayNames;
   return (
