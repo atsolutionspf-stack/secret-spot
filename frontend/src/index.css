@@ -123,6 +123,9 @@
     @apply font-sans;
     scroll-behavior: smooth;
     }
+  @media (max-width: 767px) {
+    html { scroll-behavior: auto; }
+  }
   h1, h2, h3, h4 {
     font-family: var(--font-heading);
   }
