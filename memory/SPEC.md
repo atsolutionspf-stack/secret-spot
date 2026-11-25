@@ -1,69 +1,109 @@
-# ARCHITECTURE (current): static React site → Supabase directly (see /app/supabase/README.md)
-- Frontend talks ONLY to Supabase via frontend/src/lib/data.ts (supabase-js, VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY).
-- Tables: menu_items, bookings, messages, orders, order_items, admins (RLS; only users in public.admins read/write private data).
-- Public writes via RPC: create_booking, create_message, create_order (prices from menu_items, hours/pickup slots in SQL), order_config.
-- Owner login: Supabase Auth email+password (phone OTP once an SMS provider is enabled). PIN login removed.
-- Emails: Supabase Edge Function `notify` (Resend, user's own key) — invoked by the site after each write; dedup flags in DB.
-- Hosting: Cloudflare Pages (frontend/, yarn build, dist, public/_redirects). The FastAPI/Mongo backend below is LEGACY and unused by the site.
-- Schema source of truth: backend/alembic/versions/0002_full_supabase.sql; paste-ready supabase/setup.sql (schema + 26-item menu).
+# Secret Spot — especificación técnica vigente
 
-# Secret Spot — restaurant website (Puçol beach)
-Public single-page site (ES default / EN toggle, persisted in localStorage `ss_lang`) + PIN-protected admin at /admin.
+## Arquitectura desplegada
 
-## Public (/)
-Hero (Hacer una reserva / Nuestro menú), Story, Services (9: terraza, vistas al mar, servicio en barra, mascotas, zona infantil, accesible, para llevar, bodas, eventos privados), Payment options, Menu (tabs burgers/alitas/poke/sides/sweets; only available items),
-Booking form, Contact form (≤500 chars), hours with live Open/Closed badge (Europe/Madrid), footer with legal notice dialog, mobile action bar.
+La web pública y el panel de administración se construyen desde `frontend/` con React, TypeScript y Vite, y se publican en Cloudflare Pages.
 
-## Allergens
-menu_items.allergens is a string of numbers "1, 3, 10" (1–14). Shown as icon chips per dish + legend under the menu (frontend/src/components/site/Allergens.tsx).
-Numbering (owner's list; #10 assumed Lácteos because the list repeated Mostaza): 1 Gluten, 2 Crustáceos, 3 Huevos, 4 Pescado, 5 Cacahuete, 6 Soja, 7 Frutos secos, 8 Apio, 9 Mostaza, 10 Lácteos, 11 Sésamo, 12 Sulfitos, 13 Moluscos, 14 Altramuces.
+**Supabase** es la fuente de datos y autenticación:
+- El frontend usa `@supabase/supabase-js` con `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY`.
+- Las tablas están protegidas mediante RLS.
+- Las operaciones públicas de reserva y contacto usan RPCs SQL.
+- El panel usa Supabase Auth y la función `is_admin` para verificar permisos.
+- Las notificaciones de correo se envían mediante la Edge Function `notify`.
 
-## Pickup orders (DEMO MODE until Supabase is connected) — see /app/supabase/README.md
-- "Pedir ahora" buttons (header, hero, menu section, mobile bar) open a Sheet: Carta → Carrito → Datos → Resumen → Confirmación.
-- Pickup only, pay at pickup. Ordering only while open; pickup slots every 15 min from now+20 min to close-15 min (backend/lib/orders.py).
-- Cart stores ids+qty only (localStorage ss_cart_v1); prices from the live menu, computed in cents (features/orders/cart.ts).
-  Server recomputes totals from Mongo menu prices with Decimal; client prices are ignored.
-- GET /api/orders/config → {mode: demo|supabase, accepting, reason: closed|last_orders|null, pickup_slots, prep_minutes}
-- POST /api/orders {customer_name, customer_phone, notes, pickup_time, items[{menu_item_id, quantity}]} → 201 {order, persisted, mode}
-  400 detail codes: closed, last_orders, invalid_pickup_time, item_unavailable, quantity_too_high; 503 store_unavailable.
-- Store: DemoOrderStore (persisted=false, nothing saved) unless DATABASE_URL (Supabase transaction pooler) is set → SupabaseOrderStore
-  (SQLAlchemy async, tables orders/order_items via Alembic, RLS on) + owner email on each real order.
-- Visibility: buttons ALWAYS shown (owner request), also on the published site; demo banners + "PRUEBA · NO GUARDADO" confirmation remain.
-- Testing while closed: pin the clock in pytest (tests/test_orders_api.py) or mock /api/orders/config in the browser.
+**Cloudflare Worker** en `cloudflare-api/` es la API de pedidos:
+- `GET /api/health`
+- `GET /api/menu` (endpoint disponible en el Worker)
+- `GET /api/orders/config`
+- `POST /api/orders`
 
-## Opening hours (backend/lib/hours.py mirrors frontend/src/lib/hours.ts)
-Thu 19:00–00:00, Fri–Sun 19:00–01:00, Mon–Wed closed. Booking slots every 30 min, last 30 min before close (Thu ≤23:30, Fri–Sun ≤00:30).
-Server rejects: closed_day, invalid_time, date_in_past, time_in_past, date_too_far (>90 days) → 400 {detail: code}.
+El Worker usa el secreto `SUPABASE_SECRET_KEY` del entorno de Cloudflare. Nunca debe trasladarse al frontend, a variables `VITE_*` ni al repositorio.
 
-## API (/api)
-- GET /hours → {today, is_open, now_time, weekday(Mon=0)}
-- GET /menu (available only) · POST /bookings (201, status=pending, code SS-XXXXXX) · POST /messages (201)
-- POST /admin/login {pin} → sets cookie · POST /admin/logout · GET /admin/me
-- Protected: GET /admin/stats · GET /admin/bookings?status= · PATCH /admin/bookings/{id} {status}
-  GET /admin/messages · PATCH /admin/messages/{id} {read} · DELETE /admin/messages/{id}
-  GET/POST /admin/menu · PATCH/DELETE /admin/menu/{id}
+## Flujos funcionales
 
-## Data (Mongo, string uuid `id`)
-menu_items{name, category, description_es/en, price, price_note, tags[vegan|spicy|star|new], allergens, available, sort_order}
-bookings{name, phone, email, date, time, party_size, note, code, status pending|confirmed|cancelled|completed, created_at}
-messages{name, email, phone, subject, message, read, created_at}
+### Web pública
+- Página principal multidioma (español por defecto e inglés).
+- Carta obtenida desde Supabase, con disponibilidad, categorías, etiquetas y alérgenos.
+- Formulario de reservas, enviado mediante RPC `create_booking`.
+- Formulario de contacto, enviado mediante RPC `create_message`.
+- Horarios y configuración pública mediante RPC `public_schedule_config`.
+- Pedidos para recoger, con pago en el establecimiento.
 
-## Seed
-`cd backend && python seed.py` (26 real menu items from the old site; `--reset` reloads). Bookings/messages start empty.
-## Email notifications (backend/lib/email.py, Emergent-managed Resend, sent as background tasks; failures only logged)
-- New booking → owner (OWNER_EMAIL) + guest "received" email
-- New contact message → owner
-- Admin changes booking status to confirmed/cancelled → guest email (only when the status actually changes; completed sends nothing)
-- Guest emails use booking.lang (es|en, sent by the frontend from the site language). Reply-To = EMAIL_REPLY_TO.
-- Env: EMERGENT_EMAIL_KEY, EMAIL_FROM_NAME="Secret Spot", EMAIL_REPLY_TO, OWNER_EMAIL, PUBLIC_SITE_URL
-- Testing: use delivered@resend.dev as guest email; owner alerts go to the real inbox.
+### Panel /admin
+- Autenticación con Supabase Auth (email/contraseña y flujo telefónico OTP si está habilitado en Supabase).
+- La función `is_admin` determina si la cuenta autenticada pertenece al conjunto de administradores.
+- Gestión de reservas, mensajes, carta, pedidos y configuración de horarios.
+- Las consultas y escrituras del panel se hacen con Supabase y quedan sujetas a RLS y RPCs.
 
-Not in scope: online ordering/payment, SMS/WhatsApp, capacity checks.
+### Pedidos para recoger
+- El frontend consulta `GET /api/orders/config` para conocer si se aceptan pedidos y qué horas de recogida están disponibles.
+- El frontend envía `POST /api/orders` al Worker.
+- El Worker valida nombre, teléfono, email, notas, productos, cantidades y hora elegida.
+- Los precios se consultan en Supabase en el servidor; no se confía en precios ni totales enviados por el navegador.
+- La RPC `create_pickup_order` vuelve a validar y crea el pedido y sus líneas en una única transacción.
+- Los pedidos son para recoger y se pagan en el establecimiento.
+- La notificación de pedido se solicita a la Edge Function `notify`.
 
-## Cloudflare Worker API (user's repo, branch pedidos-backend)
-- `cloudflare-api/src/main.py` (FastAPI on Python Workers): GET /api/menu, GET /api/orders/config, POST /api/orders (pickup only, pay_at_pickup, status pending).
-- POST /api/orders validates input, checks order_config (accepting + pickup_slots), loads menu_items by server RESTAURANT_ID, computes prices server-side, then calls RPC `create_pickup_order` (cloudflare-api/sql/create_pickup_order.sql) which re-validates and inserts order + lines in one transaction. RPC executable only by service_role.
-- Tests: `cloudflare-api/tests/test_orders.py` (mocked Supabase) and `cloudflare-api/tests/sql/run.sh` (throwaway local Postgres with fake schema).
-- Frontend order config now comes from GET /api/orders/config (lib/api.ts; optional public VITE_API_BASE_URL = Worker origin on Cloudflare Pages). No direct supabase.rpc("order_config").
-- Order submission is TEST MODE only (ORDERS_LIVE=false in features/orders/orderService.ts): built locally, persisted=false, no network.
-- cloudflare-api deploy config: pyproject.toml (fastapi; dev: workers-py, workers-runtime-sdk), uv.lock, wrangler.jsonc (main src/main.py, python_workers, keep_vars). Workers Builds: root dir `cloudflare-api`, deploy command `uv run pywrangler deploy`.
+## Datos y seguridad
+
+- Identificador del restaurante configurado en el Worker y en las consultas del frontend.
+- La clave pública Supabase puede estar en el bundle del frontend, siempre con RLS correctamente configurado.
+- La clave secreta/service-role Supabase solo debe existir como secreto del Worker o en entornos administrativos seguros.
+- No registrar datos personales de clientes ni respuestas sensibles de Supabase en logs.
+- Cualquier cambio en tablas, RPCs o permisos debe revisarse junto con sus migraciones y políticas RLS.
+
+## Horarios y configuración
+
+Los horarios de negocio, reservas y pedidos se administran desde el panel. La configuración pública se obtiene con `public_schedule_config`; la configuración administrativa se consulta y actualiza mediante `admin_get_schedule_settings` y `admin_update_schedule_settings`.
+
+## Repositorio y componentes
+
+- `frontend/`: aplicación web y panel.
+- `cloudflare-api/`: Worker de pedidos, pruebas y SQL de la RPC.
+- `supabase/`: esquema, migraciones y Edge Function `notify`.
+- `.github/workflows/deploy-notify.yml`: despliegue automatizado de la función.
+- `tests/`: pruebas end-to-end.
+- `backend/`: backend FastAPI/MongoDB de la plantilla anterior. No es backend de producción; se conserva únicamente por compatibilidad con el proxy local histórico de Vite. No debe ampliarse como arquitectura de producción.
+- `plan/`, `design_guidelines.json`: documentación y referencias.
+
+## Desarrollo y despliegue
+
+### Frontend
+Desde `frontend/`:
+```bash
+yarn install
+yarn typecheck
+yarn lint
+yarn test
+yarn build
+```
+
+Cloudflare Pages usa `frontend/` como directorio de proyecto, `yarn build` como build command y `dist` como directorio de salida.
+
+Variables públicas de Pages:
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_ANON_KEY`
+- `VITE_API_BASE_URL` (origen del Worker, sin `/api`)
+
+### Worker
+Desde `cloudflare-api/`:
+```bash
+uv run pywrangler deploy
+python -m pytest tests -q
+```
+
+Variables del Worker:
+- `SUPABASE_URL`
+- `RESTAURANT_ID`
+
+Secreto del Worker:
+- `SUPABASE_SECRET_KEY`
+
+### Backend heredado
+El proxy de desarrollo de Vite apunta a `http://localhost:8001`. El directorio `backend/` contiene el servidor FastAPI/MongoDB histórico. No es utilizado por Cloudflare Pages ni por el Worker desplegado. No eliminarlo hasta retirar o sustituir expresamente ese proxy y cualquier flujo local que aún dependa de él.
+
+## Pendiente de verificación
+
+- Confirmar que los valores de entorno de Cloudflare Pages (incluido `VITE_API_BASE_URL`) coinciden con el Worker actualmente desplegado.
+- Confirmar que las políticas RLS de las tablas y RPCs siguen cubriendo todos los permisos de administración y escritura pública.
+- Tras modificar código, ejecutar las comprobaciones de frontend y las pruebas del Worker antes de desplegar.
