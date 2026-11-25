@@ -97,3 +97,7 @@ android-sdk/
 credentials.json
 *.key
 .credentials
+
+# Generated platform artifacts
+.emergent/
+/test_reports/
