@@ -55,6 +55,17 @@ export function Footer() {
           <Link to="/admin" data-testid="footer-admin-link" className="hover:text-white">{t.footer.admin}</Link>
         </div>
       </div>
+      <p className="mx-auto max-w-7xl px-4 pt-3 text-center text-[11px] text-stone-600 sm:px-6 lg:px-8">
+        Designed and powered by{" "}
+        <a
+          href="https://dintel.atsolutionspf.workers.dev/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-stone-500 underline decoration-white/20 underline-offset-2 hover:text-stone-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"
+        >
+          Dintel
+        </a>.
+      </p>
     </footer>
   );
 }
